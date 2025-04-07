@@ -1,30 +1,4 @@
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches: [ main ]  # or your default branch
-
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write  # This is important for GitHub Pages deployment
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      # Add your build steps here
-      # - name: Setup Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: '18'
-      # - name: Install dependencies
-      #   run: npm ci
-      # - name: Build
-      #   run: npm run build
-
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: church-connect  # Adjust this to your build output directory
-          # No token needed! It uses GITHUB_TOKEN by default
+- name: Deploy to GitHub Pages
+  uses: JamesIves/github-pages-deploy-action@v4
+  with:
+    folder: dist  # Change this to match your actual build output directory
