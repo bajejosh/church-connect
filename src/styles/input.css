@@ -1,0 +1,57 @@
+/* Input styles for light and dark modes */
+.form-input {
+  @apply block w-full px-3 py-2 
+  bg-white dark:bg-gray-800 
+  text-gray-900 dark:text-gray-100 
+  border border-gray-300 dark:border-gray-700 
+  rounded-md shadow-sm 
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+  dark:focus:ring-blue-400 dark:focus:border-blue-400
+  placeholder-gray-500 dark:placeholder-gray-400
+  transition-colors duration-200;
+}
+
+.form-textarea {
+  @apply block w-full px-3 py-2 
+  bg-white dark:bg-gray-800 
+  text-gray-900 dark:text-gray-100 
+  border border-gray-300 dark:border-gray-700 
+  rounded-md shadow-sm 
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+  dark:focus:ring-blue-400 dark:focus:border-blue-400
+  placeholder-gray-500 dark:placeholder-gray-400
+  transition-colors duration-200;
+}
+
+.form-select {
+  @apply block w-full px-3 py-2 
+  bg-white dark:bg-gray-800 
+  text-gray-900 dark:text-gray-100 
+  border border-gray-300 dark:border-gray-700 
+  rounded-md shadow-sm 
+  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+  dark:focus:ring-blue-400 dark:focus:border-blue-400
+  placeholder-gray-500 dark:placeholder-gray-400
+  transition-colors duration-200;
+}
+
+/* Fix for input in dark mode */
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: rgba(156, 163, 175, 0.8);
+  opacity: 1;
+}
+
+/* Improve contrast for inputs in dark mode */
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+/* Ensure text is visible in post composer */
+.dark textarea,
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"] {
+  @apply text-gray-100;
+  @apply bg-gray-800;
+}

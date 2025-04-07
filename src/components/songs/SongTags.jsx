@@ -80,11 +80,11 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
   };
   
   if (loading && tags.length === 0) {
-    return <div className="text-gray-500 text-sm">Loading tags...</div>;
+    return <div className="text-gray-500 dark:text-gray-400 text-sm">Loading tags...</div>;
   }
   
   if (error && tags.length === 0) {
-    return <div className="text-red-500 text-sm">{error}</div>;
+    return <div className="text-red-500 dark:text-red-400 text-sm">{error}</div>;
   }
   
   return (
@@ -92,7 +92,7 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
       {/* Selected tags display */}
       {selectedTags.length > 0 && (
         <div className="mb-3">
-          <div className="text-sm text-gray-500 mb-1 flex items-center">
+          <div className="text-sm text-gray-500 dark:text-gray-400 mb-1 flex items-center">
             <FaTags className="mr-1" /> Selected Tags:
           </div>
           <div className="flex flex-wrap gap-1">
@@ -126,7 +126,7 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
         <>
           {/* Available tags */}
           <div className="mb-3">
-            <div className="text-sm text-gray-500 mb-1">Available Tags:</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Available Tags:</div>
             <div className="flex flex-wrap gap-1">
               {tags.map(tag => {
                 const isSelected = selectedTags.some(t => t.id === tag.id);
@@ -153,7 +153,9 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(true)}
-                className="inline-flex items-center px-2 py-1 border border-dashed border-gray-300 rounded-full text-xs font-medium text-gray-500 hover:text-gray-700 hover:border-gray-400"
+                className="inline-flex items-center px-2 py-1 border border-dashed border-gray-300 dark:border-gray-600 
+                         rounded-full text-xs font-medium text-gray-500 dark:text-gray-400 
+                         hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
               >
                 <FaPlus className="mr-1" size={10} />
                 New Tag
@@ -163,11 +165,11 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
           
           {/* Create tag form */}
           {showCreateForm && (
-            <div className="mt-4 p-3 border border-gray-200 rounded-md bg-gray-50">
-              <h4 className="text-sm font-medium mb-2">Create New Tag</h4>
+            <div className="mt-4 p-3 border border-gray-200 dark:border-gray-700 rounded-md bg-gray-50 dark:bg-gray-700">
+              <h4 className="text-sm font-medium mb-2 text-gray-900 dark:text-gray-100">Create New Tag</h4>
               <form onSubmit={handleCreateTag} className="space-y-3">
                 <div>
-                  <label htmlFor="tagName" className="block text-xs text-gray-500">
+                  <label htmlFor="tagName" className="block text-xs text-gray-500 dark:text-gray-400">
                     Tag Name
                   </label>
                   <input
@@ -175,14 +177,16 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
                     id="tagName"
                     value={newTagName}
                     onChange={(e) => setNewTagName(e.target.value)}
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-1 px-2 
+                             bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                             text-sm focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                     placeholder="Enter tag name"
                     required
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="tagColor" className="block text-xs text-gray-500">
+                  <label htmlFor="tagColor" className="block text-xs text-gray-500 dark:text-gray-400">
                     Tag Color
                   </label>
                   <div className="flex mt-1">
@@ -191,13 +195,15 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
                       id="tagColor"
                       value={newTagColor}
                       onChange={(e) => setNewTagColor(e.target.value)}
-                      className="h-8 w-8 border border-gray-300 rounded"
+                      className="h-8 w-8 border border-gray-300 dark:border-gray-600 rounded"
                     />
                     <input
                       type="text"
                       value={newTagColor}
                       onChange={(e) => setNewTagColor(e.target.value)}
-                      className="ml-2 block w-full border border-gray-300 rounded-md shadow-sm py-1 px-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                      className="ml-2 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-1 px-2 
+                               bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                               text-sm focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                       placeholder="#HEX"
                     />
                   </div>
@@ -207,13 +213,18 @@ const SongTags = ({ selectedTags = [], onChange, readOnly = false }) => {
                   <button
                     type="button"
                     onClick={() => setShowCreateForm(false)}
-                    className="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-md text-sm 
+                             text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800
+                             hover:bg-gray-50 dark:hover:bg-gray-700 
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-3 py-1 border border-transparent rounded-md text-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-1 border border-transparent rounded-md text-sm text-white 
+                             bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                     disabled={loading || !newTagName.trim()}
                   >
                     Create

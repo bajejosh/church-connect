@@ -1,192 +1,16 @@
 // src/components/feed/Post.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { 
-  FaUser, 
   FaRegHeart, 
   FaHeart, 
   FaRegComment, 
   FaPray, 
-  FaCalendarAlt,
-  FaEllipsisH,
-  FaBullhorn
+  FaUser,
+  FaEllipsisH
 } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
-
-// Component for rendering YouTube and Suno embeds
-const MediaEmbed = ({ url, type, index }) => {
-  if (type === 'youtube') {
-    const videoId = getYouTubeVideoId(url);
-    if (!videoId) return null;
-    
-    return (
-      <div key={`yt-${index}`} className="my-3">
-        <iframe
-          width="100%"
-          height="300"
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title={`YouTube video ${index ? index + 1 : ''}`}
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          className="rounded-md"
-        ></iframe>
-      </div>
-    );
-  } else if (type === 'suno') {
-    const songId = getSunoSongId(url);
-    if (!songId) return null;
-    
-    return (
-      <div key={`suno-${index}`} className="my-3 p-4 bg-gray-50 rounded-lg border">
-        <div className="flex items-center mb-2">
-          <img src="https://storage.googleapis.com/prod-suno-ipfs/suno-logomark.png" alt="Suno" className="h-6 w-6 mr-2" />
-          <span className="font-medium">Suno Song</span>
-        </div>
-        <div className="bg-blue-50 border border-blue-100 rounded-md p-4 text-center">
-          <p className="text-blue-700 mb-2">Suno song shared</p>
-          <a 
-            href={url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-block"
-          >
-            Listen on Suno
-          </a>
-        </div>
-      </div>
-    );
-  }
-  
-  return null;
-};
-
-// Component for comment content rendering
-const CommentContent = ({ content }) => {
-  // Look for YouTube and Suno URLs in the content
-  const youtubeUrls = findYouTubeUrls(content);
-  const sunoUrls = findSunoUrls(content);
-  
-  // If no media URLs found, just return the text content
-  if (youtubeUrls.length === 0 && sunoUrls.length === 0) {
-    return <p className="text-gray-800">{content}</p>;
-  }
-  
-  // If the content is just a media URL (trimmed), show only the embed
-  if ((youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) ||
-      (sunoUrls.length === 1 && content.trim() === sunoUrls[0])) {
-    
-    // Handle YouTube URL
-    if (youtubeUrls.length === 1) {
-      const videoId = getYouTubeVideoId(youtubeUrls[0]);
-      if (videoId) {
-        return (
-          <div className="mt-2">
-            <iframe
-              width="100%"
-              height="195"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              title="YouTube video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded-md"
-            ></iframe>
-          </div>
-        );
-      }
-    }
-    
-    // Handle Suno URL
-    if (sunoUrls.length === 1) {
-      const songId = getSunoSongId(sunoUrls[0]);
-      if (songId) {
-        return (
-          <div className="mt-2 p-2 bg-gray-50 rounded-md border">
-            <div className="flex items-center mb-1">
-              <img src="https://storage.googleapis.com/prod-suno-ipfs/suno-logomark.png" alt="Suno" className="h-4 w-4 mr-1" />
-              <span className="text-xs font-medium">Suno Song</span>
-            </div>
-            <div className="bg-blue-50 border border-blue-100 rounded-md p-2 text-center">
-              <a 
-                href={sunoUrls[0]} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 inline-block"
-              >
-                Listen on Suno
-              </a>
-            </div>
-          </div>
-        );
-      }
-    }
-  }
-  
-  // For content with both text and media URLs
-  return (
-    <div>
-      <p className="text-gray-800 mb-2">{content}</p>
-      
-      {/* YouTube embeds */}
-      {youtubeUrls.map((url, index) => (
-        <MediaEmbed key={`yt-${index}`} url={url} type="youtube" index={index} />
-      ))}
-      
-      {/* Suno embeds */}
-      {sunoUrls.map((url, index) => (
-        <MediaEmbed key={`suno-${index}`} url={url} type="suno" index={index} />
-      ))}
-    </div>
-  );
-};
-
-// Component for post content rendering
-const PostContent = ({ content }) => {
-  if (!content) return null;
-  
-  // Look for YouTube and Suno URLs in the content
-  const youtubeUrls = findYouTubeUrls(content);
-  const sunoUrls = findSunoUrls(content);
-  
-  // If no media URLs found, just return the text content
-  if (youtubeUrls.length === 0 && sunoUrls.length === 0) {
-    return <p className="text-gray-800 whitespace-pre-line">{content}</p>;
-  }
-  
-  // If the content is just a media URL (trimmed), show only the embed
-  if ((youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) ||
-      (sunoUrls.length === 1 && content.trim() === sunoUrls[0])) {
-    
-    // Handle YouTube URL
-    if (youtubeUrls.length === 1) {
-      return <MediaEmbed url={youtubeUrls[0]} type="youtube" />;
-    }
-    
-    // Handle Suno URL
-    if (sunoUrls.length === 1) {
-      return <MediaEmbed url={sunoUrls[0]} type="suno" />;
-    }
-  }
-  
-  // For content with both text and media URLs
-  // First show the text, then the embeds for each URL found
-  return (
-    <div>
-      <p className="text-gray-800 whitespace-pre-line mb-3">{content}</p>
-      
-      {/* YouTube embeds */}
-      {youtubeUrls.map((url, index) => (
-        <MediaEmbed key={`yt-${index}`} url={url} type="youtube" index={index} />
-      ))}
-      
-      {/* Suno embeds */}
-      {sunoUrls.map((url, index) => (
-        <MediaEmbed key={`suno-${index}`} url={url} type="suno" index={index} />
-      ))}
-    </div>
-  );
-};
+import PostHeader from './PostHeader';
+import { parseContentWithMedia } from '../../utils/mediaUtils';
 
 // Post component
 const Post = ({ post, currentUserId }) => {
@@ -196,6 +20,8 @@ const Post = ({ post, currentUserId }) => {
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [userReactions, setUserReactions] = useState(post.userReactions || {});
+  const [authorInfo, setAuthorInfo] = useState(null);
+  const [showMenu, setShowMenu] = useState(false);
   
   // Initialize user reactions from post data
   useEffect(() => {
@@ -203,8 +29,38 @@ const Post = ({ post, currentUserId }) => {
       setUserReactions(post.userReactions);
     }
   }, [post.userReactions]);
-  
-  const [showMenu, setShowMenu] = useState(false);
+
+  // Fetch author info if not already provided
+  useEffect(() => {
+    const fetchAuthorInfo = async () => {
+      if (post.is_anonymous) return;
+      
+      if (post.profile?.full_name && post.profile?.full_name !== 'User') {
+        setAuthorInfo(post.profile);
+        return;
+      }
+      
+      if (!post.user_id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, avatar_url')
+          .eq('id', post.user_id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setAuthorInfo(data);
+        }
+      } catch (err) {
+        console.error('Error fetching author info:', err);
+      }
+    };
+    
+    fetchAuthorInfo();
+  }, [post.user_id, post.is_anonymous, post.profile]);
   
   // Format the post date
   const formatRelativeTime = (dateString) => {
@@ -252,7 +108,6 @@ const Post = ({ post, currentUserId }) => {
   
   const likesCount = getTotalReactions('like');
   const prayerCount = getTotalReactions('pray');
-  const amensCount = getTotalReactions('amen');
   
   // Toggle a reaction
   const toggleReaction = async (type) => {
@@ -286,32 +141,23 @@ const Post = ({ post, currentUserId }) => {
     }
   }, [showComments]);
   
-  // Get user name from cache or fallback to user ID
-  const getUserInfo = async (userId) => {
-    if (!userId) return { full_name: 'Unknown User', avatar_url: null };
+  // Get commenter's display name
+  const getCommenterName = (comment) => {
+    if (!comment) return "User";
     
-    // Check if it's the current user
-    if (userId === currentUserId) {
-      return {
-        full_name: localStorage.getItem('userFullName') || 'You',
-        avatar_url: localStorage.getItem('userAvatarUrl') || null
-      };
+    // If it's the current user, use "You" or their name from localStorage
+    if (comment.user_id === currentUserId) {
+      const currentUserName = localStorage.getItem('userFullName');
+      return currentUserName || "You";
     }
     
-    // Try to get from cache
-    try {
-      const usernamesCache = JSON.parse(localStorage.getItem('usernamesCache') || '{}');
-      if (usernamesCache[userId]) {
-        return { 
-          full_name: usernamesCache[userId],
-          avatar_url: null // We don't have avatar URLs in the cache
-        };
-      }
-    } catch (err) {
-      console.log('Error reading username cache:', err);
+    // Try to get the actual name, avoiding placeholder values
+    if (comment.profiles?.full_name && comment.profiles.full_name !== 'User') {
+      return comment.profiles.full_name;
     }
     
-    return { full_name: 'User', avatar_url: null };
+    // Just "User" as fallback
+    return "User";
   };
   
   // Fetch comments for the post
@@ -337,11 +183,32 @@ const Post = ({ post, currentUserId }) => {
       
       // Process each comment to add user info
       const processedComments = await Promise.all(data.map(async (comment) => {
-        const userInfo = await getUserInfo(comment.user_id);
-        return {
-          ...comment,
-          profiles: userInfo
-        };
+        if (!comment.user_id) {
+          return {
+            ...comment,
+            profiles: null
+          };
+        }
+        
+        // Get user info for each comment
+        try {
+          const { data: userProfile } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', comment.user_id)
+            .single();
+            
+          return {
+            ...comment,
+            profiles: userProfile
+          };
+        } catch (err) {
+          console.error('Error fetching commenter profile:', err);
+          return {
+            ...comment,
+            profiles: null
+          };
+        }
       }));
       
       setComments(processedComments);
@@ -394,70 +261,92 @@ const Post = ({ post, currentUserId }) => {
     }
   };
   
+  // Parse post content for media embeds
+  const renderContentPart = (part, index) => {
+    switch (part.type) {
+      case 'youtube':
+        return (
+          <div key={`youtube-${index}`} className="aspect-w-16 aspect-h-9 mt-3 rounded-lg overflow-hidden">
+            <iframe
+              src={part.src}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="w-full h-full border-0"
+            ></iframe>
+          </div>
+        );
+      case 'suno':
+        return (
+          <div key={`suno-${index}`} className="mt-3 rounded-lg overflow-hidden">
+            <iframe
+              src={part.src}
+              title="Suno music player"
+              allow="autoplay"
+              className="w-full h-24 border-0"
+            ></iframe>
+          </div>
+        );
+      case 'url':
+        return (
+          <a 
+            key={`url-${index}`}
+            href={part.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline break-all"
+          >
+            {part.url}
+          </a>
+        );
+      case 'text':
+      default:
+        return <span key={`text-${index}`}>{part.content}</span>;
+    }
+  };
+  
+  // Render content with media
+  const renderPostContent = () => {
+    const contentParts = parseContentWithMedia(post.content);
+    return contentParts.map((part, index) => renderContentPart(part, index));
+  };
+  
+  // Render comment content with media
+  const renderCommentContent = (commentContent, commentId) => {
+    const contentParts = parseContentWithMedia(commentContent);
+    return contentParts.map((part, index) => 
+      renderContentPart(part, `comment-${commentId}-${index}`)
+    );
+  };
+  
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden mb-4">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-4">
       {/* Post header */}
       <div className="p-4 flex items-center justify-between">
-        <div className="flex items-center">
-          <Link to={`/profile/${post.user_id}`} className="flex items-center">
-            <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200 mr-3">
-              {post.profile?.avatar_url || post.avatar_url ? (
-                <img 
-                  src={post.profile?.avatar_url || post.avatar_url} 
-                  alt={post.profile?.full_name || 'User'} 
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <FaUser className="text-gray-400" />
-                </div>
-              )}
-            </div>
-            <div className="flex items-center">
-              <div>
-                <h3 className="font-medium">{post.is_anonymous ? 'Anonymous' : (post.profile?.full_name || 'User')}</h3>
-                <div className="flex items-center gap-1">
-                  <p className="text-xs text-gray-500">
-                    {relativeTime}
-                    {post.church?.name && ` • ${post.church.name}`}
-                  </p>
-
-                  {/* Post type indicator */}
-                  {(isEvent || isPrayer || isAnnouncement) && (
-                    <span className={`inline-flex items-center px-2 py-0.5 ml-1 text-xs font-medium rounded-full ${
-                      isEvent ? 'bg-blue-100 text-blue-700' : 
-                      isPrayer ? 'bg-purple-100 text-purple-700' : 
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>
-                      {isEvent && <FaCalendarAlt className="mr-1 text-xs" />}
-                      {isPrayer && <FaPray className="mr-1 text-xs" />}
-                      {isAnnouncement && <FaBullhorn className="mr-1 text-xs" />}
-                      {isEvent ? 'Event' : isPrayer ? 'Prayer' : 'Announcement'}
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-gray-400" title={formattedDate}>
-                  {formattedDate}
-                </p>
-              </div>
-            </div>
-          </Link>
-        </div>
+        <PostHeader 
+          post={post}
+          authorInfo={authorInfo}
+          relativeTime={relativeTime}
+          formattedDate={formattedDate}
+          isEvent={isEvent}
+          isPrayer={isPrayer} 
+          isAnnouncement={isAnnouncement}
+        />
         
         {/* Post menu */}
-        <div className="relative">
+        <div className="relative ml-auto">
           <button 
-            className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setShowMenu(!showMenu)}
           >
             <FaEllipsisH />
           </button>
           
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
               <div className="py-1">
                 <button 
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                   onClick={() => setShowMenu(false)}
                 >
                   Save post
@@ -465,13 +354,13 @@ const Post = ({ post, currentUserId }) => {
                 {currentUserId === post.user_id && (
                   <>
                     <button 
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                       onClick={() => setShowMenu(false)}
                     >
                       Edit post
                     </button>
                     <button 
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600"
                       onClick={() => setShowMenu(false)}
                     >
                       Delete post
@@ -486,7 +375,9 @@ const Post = ({ post, currentUserId }) => {
       
       {/* Post content */}
       <div className="p-4 pt-0">
-        <PostContent content={post.content} />
+        <div className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+          {renderPostContent()}
+        </div>
         
         {/* Media if available */}
         {post.media_urls && post.media_urls.length > 0 && (
@@ -504,8 +395,8 @@ const Post = ({ post, currentUserId }) => {
       </div>
       
       {/* Post stats */}
-      {(likesCount > 0 || prayerCount > 0 || amensCount > 0 || post.commentsCount > 0) && (
-        <div className="px-4 py-2 flex justify-between text-sm text-gray-500 border-t border-gray-100">
+      {(likesCount > 0 || prayerCount > 0 || post.commentsCount > 0) && (
+        <div className="px-4 py-2 flex justify-between text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
           <div>
             {likesCount > 0 && (
               <span className="flex items-center inline-block mr-3">
@@ -530,11 +421,11 @@ const Post = ({ post, currentUserId }) => {
         </div>
       )}
       
-      {/* Post actions */}
-      <div className="px-2 py-2 flex items-center border-t border-gray-100">
+      {/* Post actions - using flex justify-between instead for proper horizontal alignment */}
+      <div className="px-2 py-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
         <button 
           className={`flex-1 flex items-center justify-center p-2 rounded-md ${
-            userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 hover:bg-gray-50'
+            userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
           onClick={() => toggleReaction('like')}
         >
@@ -545,7 +436,7 @@ const Post = ({ post, currentUserId }) => {
         </button>
         
         <button 
-          className="flex-1 flex items-center justify-center p-2 text-gray-500 hover:bg-gray-50 rounded-md"
+          className="flex-1 flex items-center justify-center p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
           onClick={() => setShowComments(!showComments)}
         >
           <span className="inline-flex items-center">
@@ -556,7 +447,7 @@ const Post = ({ post, currentUserId }) => {
         
         <button 
           className={`flex-1 flex items-center justify-center p-2 rounded-md ${
-            userReactions.pray ? 'text-purple-500 font-medium' : 'text-gray-500 hover:bg-gray-50'
+            userReactions.pray ? 'text-purple-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
           }`}
           onClick={() => toggleReaction('pray')}
         >
@@ -569,14 +460,14 @@ const Post = ({ post, currentUserId }) => {
       
       {/* Comments section */}
       {showComments && (
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
+        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700">
           {/* Comment form */}
           {currentUserId && (
             <form onSubmit={handleCommentSubmit} className="mb-4 flex">
               <input
                 type="text"
                 placeholder="Write a comment..."
-                className="flex-1 p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 disabled={submittingComment}
@@ -593,11 +484,11 @@ const Post = ({ post, currentUserId }) => {
           
           {/* Comments list */}
           {loadingComments ? (
-            <div className="text-center text-gray-500 text-sm py-2">
+            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
               Loading comments...
             </div>
           ) : comments.length === 0 ? (
-            <div className="text-center text-gray-500 text-sm py-2">
+            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
               No comments yet. Be the first to comment!
             </div>
           ) : (
@@ -605,27 +496,31 @@ const Post = ({ post, currentUserId }) => {
               {comments.map(comment => (
                 <div key={comment.id} className="flex space-x-3">
                   {/* User avatar */}
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
+                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
                     {comment.profiles?.avatar_url ? (
                       <img 
                         src={comment.profiles.avatar_url} 
-                        alt={comment.profiles.full_name || 'User'} 
+                        alt={getCommenterName(comment)} 
                         className="h-full w-full object-cover"
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center">
-                        <FaUser className="text-gray-400" />
+                        <FaUser className="text-gray-400 dark:text-gray-500" />
                       </div>
                     )}
                   </div>
                   
                   {/* Comment content */}
                   <div className="flex-1">
-                    <div className="bg-white rounded-lg px-3 py-2 shadow-sm">
-                      <div className="font-medium text-sm">{comment.profiles?.full_name || 'User'}</div>
-                      <CommentContent content={comment.content} />
+                    <div className="bg-white dark:bg-gray-700 rounded-lg px-3 py-2 shadow-sm">
+                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                        {getCommenterName(comment)}
+                      </div>
+                      <div className="text-gray-800 dark:text-gray-200">
+                        {renderCommentContent(comment.content, comment.id)}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1 ml-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">
                       {formatRelativeTime(comment.created_at)}
                     </div>
                   </div>
@@ -638,73 +533,5 @@ const Post = ({ post, currentUserId }) => {
     </div>
   );
 };
-
-// Utility functions
-// Function to detect and extract YouTube video IDs from URLs
-function getYouTubeVideoId(url) {
-  if (!url) return null;
-  
-  // Enhanced regular expression to support more YouTube URL formats
-  const regExps = [
-    // Standard YouTube URLs (youtube.com/watch?v=VIDEO_ID)
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&\s]+)/,
-    // Short YouTube URLs (youtu.be/VIDEO_ID)
-    /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^\s]+)/,
-    // Embedded YouTube URLs (youtube.com/embed/VIDEO_ID)
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^\s]+)/,
-    // Youtube.com/v/VIDEO_ID format
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^\s?]+)/,
-    // YouTube shorts (youtube.com/shorts/VIDEO_ID)
-    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s?]+)/,
-  ];
-  
-  // Try each regex pattern
-  for (const regExp of regExps) {
-    const match = url.match(regExp);
-    if (match && match[1]) {
-      // Return the first 11 characters in case there are additional parameters
-      return match[1].substring(0, 11);
-    }
-  }
-  
-  return null;
-}
-
-// Function to detect and extract Suno song IDs from URLs
-function getSunoSongId(url) {
-  if (!url) return null;
-  
-  // Extract Suno song ID from URL
-  const sunoRegex = /(?:https?:\/\/)?(?:www\.)?suno\.com\/song\/([a-zA-Z0-9-]+)/;
-  const match = url.match(sunoRegex);
-  
-  if (match && match[1]) {
-    return match[1];
-  }
-  
-  return null;
-}
-
-// Function to find YouTube URLs within text
-function findYouTubeUrls(text) {
-  if (!text) return [];
-  
-  // Match potential YouTube URLs in the text
-  const urlRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/\S+|youtu\.be\/\S+))/gi;
-  const matches = text.match(urlRegex);
-  
-  return matches || [];
-}
-
-// Function to find Suno URLs within text
-function findSunoUrls(text) {
-  if (!text) return [];
-  
-  // Match potential Suno URLs in the text
-  const urlRegex = /(https?:\/\/(?:www\.)?suno\.com\/song\/[a-zA-Z0-9-]+(?:\?[^\s]*)?)/gi;
-  const matches = text.match(urlRegex);
-  
-  return matches || [];
-}
 
 export default Post;

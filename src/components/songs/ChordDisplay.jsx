@@ -3,71 +3,119 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Component to display chord charts with properly aligned chords above lyrics
+ * Enhanced component to display chord charts with properly aligned chords above lyrics
+ * and improved section formatting
  */
 const ChordDisplay = ({ content, className = '' }) => {
   if (!content) return null;
   
-  // Parse the content to identify chord lines and lyric lines
+  // Process the content to identify chord lines, lyric lines and sections
+  const processedContent = processChordContent(content);
+  
+  return (
+    <div className={`font-mono text-sm ${className}`}>
+      {processedContent.map((section, sectionIndex) => (
+        <div 
+          key={`section-${sectionIndex}`} 
+          className="chord-section mb-6"
+        >
+          {/* Section title, if present */}
+          {section.title && (
+            <h3 className="text-lg font-semibold mb-2 text-blue-600 dark:text-blue-400">
+              {section.title}
+            </h3>
+          )}
+          
+          {/* Section content */}
+          <div className="chord-section-content pl-0 md:pl-2">
+            {section.lines.map((line, lineIndex) => {
+              if (line.type === 'chord-lyric-pair') {
+                return (
+                  <div key={`line-${sectionIndex}-${lineIndex}`} className="mb-1">
+                    <div className="text-blue-600 dark:text-blue-400 font-bold whitespace-pre">{line.chords}</div>
+                    <div className="whitespace-pre text-gray-900 dark:text-gray-100">{line.lyrics}</div>
+                  </div>
+                );
+              } else {
+                // Handle empty lines
+                if (line.content.trim() === '') {
+                  return <div key={`line-${sectionIndex}-${lineIndex}`} className="h-4"></div>;
+                }
+                // Comment or other non-chord, non-section line
+                return (
+                  <div 
+                    key={`line-${sectionIndex}-${lineIndex}`} 
+                    className="whitespace-pre mb-1 text-gray-900 dark:text-gray-100"
+                  >
+                    {line.content}
+                  </div>
+                );
+              }
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+/**
+ * Process chord content into sections with chord-lyric pairs and regular lines
+ */
+function processChordContent(content) {
+  if (!content) return [];
+  
   const lines = content.split('\n');
-  const formattedLines = [];
+  const sections = [];
+  let currentSection = { lines: [] };
   
   for (let i = 0; i < lines.length; i++) {
     const currentLine = lines[i];
     const nextLine = i + 1 < lines.length ? lines[i + 1] : null;
     
-    // Try to detect if this is a chord line
-    // Chord lines typically have scattered text with spaces between chords
+    // Check if this is a section marker
+    const sectionMatch = currentLine.trim().match(/^\[(.*?)\]$/);
+    if (sectionMatch) {
+      // If we already have content in the current section, save it
+      if (currentSection.lines.length > 0) {
+        sections.push(currentSection);
+      }
+      
+      // Start a new section with this title
+      currentSection = {
+        title: sectionMatch[0], // Keep brackets for consistency
+        lines: []
+      };
+      continue;
+    }
+    
+    // Detect chord lines
     const isChordLine = isLikelyChordLine(currentLine);
     
     if (isChordLine && nextLine && !isLikelyChordLine(nextLine)) {
       // This is a chord line followed by lyrics
-      formattedLines.push({
+      currentSection.lines.push({
         type: 'chord-lyric-pair',
         chords: currentLine,
         lyrics: nextLine
       });
       i++; // Skip the next line since we've processed it
     } else {
-      // This is just a regular line (section header, comment, etc.)
-      formattedLines.push({
+      // This is just a regular line (comment, etc.)
+      currentSection.lines.push({
         type: 'text',
         content: currentLine
       });
     }
   }
   
-  return (
-    <div className={`font-mono text-sm ${className}`}>
-      {formattedLines.map((line, index) => {
-        if (line.type === 'chord-lyric-pair') {
-          return (
-            <div key={index} className="mb-1">
-              <div className="text-blue-600 font-bold whitespace-pre">{line.chords}</div>
-              <div className="whitespace-pre">{line.lyrics}</div>
-            </div>
-          );
-        } else {
-          // Handle section headers and other non-chord lines
-          // Make section headers bold and add some margin
-          if (line.content.trim().startsWith('[') && line.content.trim().endsWith(']')) {
-            return (
-              <div key={index} className="font-bold text-gray-700 mt-4 mb-2">
-                {line.content}
-              </div>
-            );
-          }
-          // Handle empty lines
-          if (line.content.trim() === '') {
-            return <div key={index} className="h-4"></div>;
-          }
-          // Regular text
-          return <div key={index} className="whitespace-pre mb-1">{line.content}</div>;
-        }
-      })}
-    </div>
-  );
-};
+  // Add the last section if it has content
+  if (currentSection.lines.length > 0) {
+    sections.push(currentSection);
+  }
+  
+  return sections;
+}
 
 /**
  * Helper function to detect if a line is likely a chord line

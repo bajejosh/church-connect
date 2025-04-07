@@ -247,8 +247,8 @@ const ServiceDetail = () => {
   if (!service) {
     return (
       <div className="max-w-3xl mx-auto p-4 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Service Not Found</h1>
-        <p className="text-gray-600 mb-4">The service you're looking for doesn't exist or has been deleted.</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Service Not Found</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">The service you're looking for doesn't exist or has been deleted.</p>
         <button
           onClick={() => navigate('/calendar')}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -262,12 +262,12 @@ const ServiceDetail = () => {
   return (
     <div className="max-w-3xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">{service.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{service.title}</h1>
         
         <div className="flex space-x-2">
           <button
             onClick={handleEdit}
-            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full"
+            className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 rounded-full"
             title="Edit service"
           >
             <FaEdit size={20} />
@@ -276,7 +276,7 @@ const ServiceDetail = () => {
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="p-2 text-red-600 hover:bg-red-50 rounded-full disabled:opacity-50"
+            className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900 rounded-full disabled:opacity-50"
             title="Delete service"
           >
             <FaTrash size={20} />
@@ -285,20 +285,20 @@ const ServiceDetail = () => {
       </div>
       
       {/* Service Details */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
         <div className="space-y-4">
           {service.description && (
-            <p className="text-gray-700">{service.description}</p>
+            <p className="text-gray-700 dark:text-gray-300">{service.description}</p>
           )}
           
           {/* Date and time */}
           <div className="flex items-start space-x-2">
-            <FaCalendarAlt className="mt-1 text-gray-500" />
+            <FaCalendarAlt className="mt-1 text-gray-500 dark:text-gray-400" />
             <div>
-              <div className="font-medium">
+              <div className="font-medium text-gray-900 dark:text-gray-100">
                 {dayjs(service.start_time).format('dddd, MMMM D, YYYY')}
               </div>
-              <div className="text-sm text-gray-500 flex items-center">
+              <div className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
                 <FaClock className="mr-1" />
                 {dayjs(service.start_time).format('h:mm A')} - {dayjs(service.end_time).format('h:mm A')}
               </div>
@@ -308,68 +308,68 @@ const ServiceDetail = () => {
           {/* Location */}
           {service.location && (
             <div className="flex items-start space-x-2">
-              <FaMapMarkerAlt className="mt-1 text-gray-500" />
-              <div>{service.location}</div>
+              <FaMapMarkerAlt className="mt-1 text-gray-500 dark:text-gray-400" />
+              <div className="text-gray-900 dark:text-gray-100">{service.location}</div>
             </div>
           )}
           
           {/* Church */}
           {churchName && (
             <div className="flex items-start space-x-2">
-              <FaChurch className="mt-1 text-gray-500" />
-              <div>{churchName}</div>
+              <FaChurch className="mt-1 text-gray-500 dark:text-gray-400" />
+              <div className="text-gray-900 dark:text-gray-100">{churchName}</div>
             </div>
           )}
         </div>
       </div>
       
       {/* Songs List */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4 flex items-center">
           <FaMusic className="mr-2" /> Service Songs
         </h2>
         
         {songs.length === 0 ? (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-gray-500 dark:text-gray-400">
             No songs have been added to this service.
           </div>
         ) : (
           <>
-            <div className="mb-2 text-sm text-gray-600">Total songs: {songs.length}</div>
-            <ul className="divide-y divide-gray-200">
+            <div className="mb-2 text-sm text-gray-600 dark:text-gray-400">Total songs: {songs.length}</div>
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700">
               {songs.map((item) => {
                 const isDone = completedSongs.has(item.id);
                 return (
-                <li key={item.id} className={`py-4 ${isDone ? 'bg-green-50' : ''} hover:bg-gray-50`}>
+                <li key={item.id} className={`py-4 ${isDone ? 'bg-green-800 dark:bg-green-950 bg-opacity-10 dark:bg-opacity-20' : ''} hover:bg-gray-50 dark:hover:bg-gray-700`}>
                   <div className="flex items-start">
-                    <div className="h-8 w-8 flex items-center justify-center bg-blue-100 text-blue-800 rounded-full mr-3 font-medium">
+                    <div className="h-8 w-8 flex items-center justify-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full mr-3 font-medium">
                       {item.song_order}
                     </div>
                     <div className="flex-grow cursor-pointer" onClick={() => handleSongClick(item.id)}>
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className={`font-medium ${isDone ? 'line-through text-gray-500' : ''}`}>
+                          <h3 className={`font-medium ${isDone ? 'line-through text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-gray-100'}`}>
                             {item.songs?.title || 'Unknown Title'}
                           </h3>
                           {item.songs?.artist && (
-                            <p className="text-sm text-gray-500">{item.songs.artist}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{item.songs.artist}</p>
                           )}
                           
                           <div className="mt-1 flex flex-wrap gap-2">
                             {item.key && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300">
                                 Key: {item.key}
                               </span>
                             )}
                             
                             {item.notes && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300">
                                 Notes: {item.notes}
                               </span>
                             )}
                             
                             {isDone && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300">
                                 <FaCheck className="mr-1" size={10} /> Completed
                               </span>
                             )}
@@ -380,8 +380,8 @@ const ServiceDetail = () => {
                           onClick={(e) => handleToggleSongDone(item.id, e)}
                           disabled={updatingSong === item.id}
                           className={`ml-2 p-2 rounded-full ${isDone 
-                            ? 'text-green-600 hover:bg-green-100' 
-                            : 'text-gray-400 hover:bg-gray-100'} 
+                            ? 'text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900' 
+                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700'} 
                             ${updatingSong === item.id ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                           title={isDone ? "Mark as incomplete" : "Mark as complete"}
                         >

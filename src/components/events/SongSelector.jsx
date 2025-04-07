@@ -116,11 +116,11 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
       {selectedSongs.length > 0 ? (
         <div className="space-y-4 mb-4">
           {selectedSongs.map((song, index) => (
-            <div key={index} className="border rounded-md p-3 bg-gray-50">
+            <div key={index} className="border rounded-md p-3 bg-gray-50 dark:bg-gray-700 dark:border-gray-600">
               <div className="flex justify-between items-start">
                 <div className="flex-1">
-                  <h3 className="font-medium">{index + 1}. {song.title}</h3>
-                  {song.artist && <p className="text-sm text-gray-500">{song.artist}</p>}
+                  <h3 className="font-medium dark:text-white">{index + 1}. {song.title}</h3>
+                  {song.artist && <p className="text-sm text-gray-500 dark:text-gray-400">{song.artist}</p>}
                 </div>
                 
                 <div className="flex space-x-1">
@@ -128,7 +128,7 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
                     type="button"
                     onClick={() => handleMoveSong(index, 'up')}
                     disabled={index === 0}
-                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed dark:text-gray-300"
                     title="Move up"
                   >
                     <FaArrowUp size={14} />
@@ -138,7 +138,7 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
                     type="button"
                     onClick={() => handleMoveSong(index, 'down')}
                     disabled={index === selectedSongs.length - 1}
-                    className="p-1 rounded hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 disabled:cursor-not-allowed dark:text-gray-300"
                     title="Move down"
                   >
                     <FaArrowDown size={14} />
@@ -147,7 +147,7 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
                   <button
                     type="button"
                     onClick={() => handleRemoveSong(index)}
-                    className="p-1 rounded hover:bg-gray-200 text-red-500"
+                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-red-500 dark:text-red-400"
                     title="Remove song"
                   >
                     <FaTimes size={14} />
@@ -157,27 +157,31 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
                 <div>
-                  <label className="block text-xs font-medium text-gray-500">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
                     Performance Key
                   </label>
                   <input
                     type="text"
                     value={song.key || ''}
                     onChange={(e) => handleKeyChange(index, e.target.value)}
-                    className="mt-1 block w-full text-sm border border-gray-300 rounded-md shadow-sm p-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full text-sm border border-gray-300 dark:border-gray-600 
+                               rounded-md shadow-sm p-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                               focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                     placeholder="Key"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-gray-500">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">
                     Performance Notes
                   </label>
                   <input
                     type="text"
                     value={song.notes || ''}
                     onChange={(e) => handleNotesChange(index, e.target.value)}
-                    className="mt-1 block w-full text-sm border border-gray-300 rounded-md shadow-sm p-1 focus:ring-blue-500 focus:border-blue-500"
+                    className="mt-1 block w-full text-sm border border-gray-300 dark:border-gray-600 
+                               rounded-md shadow-sm p-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                               focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
                     placeholder="Notes"
                   />
                 </div>
@@ -186,10 +190,10 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 border-2 border-dashed rounded-md mb-4">
-          <FaMusic className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No songs added</h3>
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="text-center py-8 border-2 border-dashed rounded-md mb-4 dark:border-gray-600">
+          <FaMusic className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+          <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No songs added</h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Add songs to your service from your song library
           </p>
         </div>
@@ -201,18 +205,20 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
           type="button"
           onClick={() => setShowSongSelector(true)}
           disabled={!churchId}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
+                     shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
         >
           <FaPlus className="mr-2" /> Add Song
         </button>
       ) : (
-        <div className="space-y-3 border p-3 rounded-md">
+        <div className="space-y-3 border p-3 rounded-md dark:border-gray-600 dark:bg-gray-700">
           <div className="flex justify-between items-center">
-            <h3 className="font-medium">Add Song to Service</h3>
+            <h3 className="font-medium dark:text-white">Add Song to Service</h3>
             <button
               type="button"
               onClick={() => setShowSongSelector(false)}
-              className="text-gray-400 hover:text-gray-500"
+              className="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
             >
               <FaTimes />
             </button>
@@ -221,11 +227,14 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
           {/* Search bar */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-gray-400" />
+              <FaSearch className="text-gray-400 dark:text-gray-500" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 
+                         rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white
+                         placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 
+                         focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm"
               placeholder="Search songs by title or artist..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -241,25 +250,25 @@ const SongSelector = ({ selectedSongs = [], onSongsChange, churchId }) => {
           
           {/* Song selection list */}
           {!loading && (
-            <div className="max-h-60 overflow-y-auto border rounded-md">
+            <div className="max-h-60 overflow-y-auto border rounded-md dark:border-gray-600">
               {filteredSongs.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-gray-500 dark:text-gray-400">
                   {availableSongs.length === 0 
                     ? 'No songs available. Add songs to your library first.'
                     : 'No songs matching your search criteria.'}
                 </div>
               ) : (
-                <ul className="divide-y divide-gray-200">
+                <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredSongs.map(song => (
                     <li 
                       key={song.id} 
-                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer"
+                      className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
                       onClick={() => handleAddSong(song)}
                     >
                       <div>
-                        <h4 className="font-medium">{song.title}</h4>
+                        <h4 className="font-medium dark:text-white">{song.title}</h4>
                         {song.artist && (
-                          <p className="text-sm text-gray-500">{song.artist}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{song.artist}</p>
                         )}
                       </div>
                     </li>

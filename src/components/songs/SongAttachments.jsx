@@ -1,7 +1,8 @@
 // src/components/songs/SongAttachments.jsx
 import { useState, useEffect, useRef } from 'react';
-import { FaFileAlt, FaMusic, FaFileAudio, FaPlus, FaTrash, FaDownload } from 'react-icons/fa';
+import { FaFileAlt, FaMusic, FaFileAudio, FaPlus, FaTrash, FaDownload, FaYoutube, FaLink } from 'react-icons/fa';
 import { uploadSongAttachment, listSongAttachments, deleteSongAttachment } from '../../lib/songAPI';
+import { supabase } from '../../lib/supabase';
 
 /**
  * Component for managing song attachments
@@ -10,11 +11,14 @@ const SongAttachments = ({ songId, readOnly = false }) => {
   const [attachments, setAttachments] = useState({
     'chord-charts': [],
     'sheet-music': [],
-    'backing-tracks': []
+    'backing-tracks': [],
+    'youtube-links': []
   });
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
+  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   
   const fileInputRef = useRef(null);
   const [selectedType, setSelectedType] = useState(null);
@@ -23,7 +27,8 @@ const SongAttachments = ({ songId, readOnly = false }) => {
   const attachmentTypes = [
     { value: 'chord-charts', label: 'Chord Charts', icon: <FaFileAlt /> },
     { value: 'sheet-music', label: 'Sheet Music', icon: <FaMusic /> },
-    { value: 'backing-tracks', label: 'Backing Tracks', icon: <FaFileAudio /> }
+    { value: 'backing-tracks', label: 'Backing Tracks', icon: <FaFileAudio /> },
+    { value: 'youtube-links', label: 'YouTube Links', icon: <FaYoutube /> }
   ];
   
   // Load attachments
@@ -34,7 +39,45 @@ const SongAttachments = ({ songId, readOnly = false }) => {
       try {
         setLoading(true);
         const data = await listSongAttachments(songId);
-        setAttachments(data);
+        
+        // Check if the youtube_links table exists before trying to query it
+        try {
+          // Fetch YouTube links from the database
+          const { data: youtubeData, error } = await supabase
+            .from('song_youtube_links')
+            .select('*')
+            .eq('song_id', songId);
+          
+          if (error && error.code === '42P01') {
+            // Table doesn't exist yet, just use an empty array
+            console.log('YouTube links table not yet created');
+            setAttachments({
+              ...data,
+              'youtube-links': []
+            });
+          } else if (error) {
+            throw error;
+          } else {
+            // Add YouTube links to attachments
+            const youtubeLinks = youtubeData || [];
+            const allAttachments = {
+              ...data,
+              'youtube-links': youtubeLinks.map(link => ({
+                name: link.title || 'YouTube Video',
+                url: link.url,
+                id: link.id
+              }))
+            };
+            
+            setAttachments(allAttachments);
+          }
+        } catch (err) {
+          console.log('Could not fetch YouTube links:', err);
+          setAttachments({
+            ...data,
+            'youtube-links': []
+          });
+        }
       } catch (err) {
         console.error('Error loading attachments:', err);
         setError('Failed to load attachments');
@@ -61,7 +104,10 @@ const SongAttachments = ({ songId, readOnly = false }) => {
       
       // Refresh the list
       const data = await listSongAttachments(songId);
-      setAttachments(data);
+      setAttachments(prev => ({
+        ...prev,
+        ...data
+      }));
       
       // Reset file input
       if (fileInputRef.current) {
@@ -75,25 +121,130 @@ const SongAttachments = ({ songId, readOnly = false }) => {
       setSelectedType(null);
     }
   };
+
+  // Extract YouTube video ID from URL
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    
+    // Regular expressions to handle various YouTube URL formats
+    const regExps = [
+      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&\s]+)/,
+      /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^\s]+)/,
+      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^\s]+)/,
+      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^\s?]+)/,
+      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s?]+)/,
+    ];
+    
+    for (const regExp of regExps) {
+      const match = url.match(regExp);
+      if (match && match[1]) {
+        return match[1].substring(0, 11);
+      }
+    }
+    
+    return null;
+  };
   
-  // Handle file deletion
-  const handleDelete = async (type, fileName) => {
+  // Add YouTube link
+  const handleAddYoutubeLink = async () => {
+    if (!youtubeUrl.trim()) return;
+    
+    const videoId = getYouTubeVideoId(youtubeUrl);
+    if (!videoId) {
+      setError('Invalid YouTube URL');
+      return;
+    }
+    
     try {
-      await deleteSongAttachment(songId, type, fileName);
+      setUploading(true);
       
-      // Update local state to remove the file
+      // Generate a title from the URL or use a default
+      let title = 'YouTube Video';
+      try {
+        const response = await fetch(`https://www.youtube.com/oembed?url=${youtubeUrl}&format=json`);
+        const data = await response.json();
+        if (data.title) {
+          title = data.title;
+        }
+      } catch (err) {
+        console.log('Could not fetch video title, using default');
+      }
+      
+      // Add YouTube link to database
+      const { data, error } = await supabase
+        .from('song_youtube_links')
+        .insert({
+          song_id: songId,
+          url: youtubeUrl,
+          title: title,
+          video_id: videoId
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      // Update local state
       setAttachments(prev => ({
         ...prev,
-        [type]: prev[type].filter(file => file.name !== fileName)
+        'youtube-links': [
+          ...prev['youtube-links'] || [],
+          {
+            name: title,
+            url: youtubeUrl,
+            id: data.id
+          }
+        ]
+      }));
+      
+      // Reset input
+      setYoutubeUrl('');
+      setShowYoutubeInput(false);
+      
+    } catch (err) {
+      console.error('Error adding YouTube link:', err);
+      setError('Failed to add YouTube link');
+    } finally {
+      setUploading(false);
+    }
+  };
+  
+  // Handle file deletion
+  const handleDelete = async (type, fileName, id) => {
+    try {
+      if (type === 'youtube-links') {
+        // Delete YouTube link from database
+        const { error } = await supabase
+          .from('song_youtube_links')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+      } else {
+        // Delete file from storage
+        await deleteSongAttachment(songId, type, fileName);
+      }
+      
+      // Update local state to remove the item
+      setAttachments(prev => ({
+        ...prev,
+        [type]: prev[type].filter(item => 
+          type === 'youtube-links' ? item.id !== id : item.name !== fileName
+        )
       }));
     } catch (err) {
-      console.error('Error deleting file:', err);
-      setError('Failed to delete file');
+      console.error('Error deleting item:', err);
+      setError('Failed to delete item');
     }
   };
   
   // Trigger file input click when type is selected
   const selectFileType = (type) => {
+    if (type === 'youtube-links') {
+      setShowYoutubeInput(true);
+      return;
+    }
+    
     setSelectedType(type);
     
     // Small delay to ensure state is updated
@@ -132,7 +283,7 @@ const SongAttachments = ({ songId, readOnly = false }) => {
   }
   
   // Check if there are any attachments
-  const hasAttachments = Object.values(attachments).some(files => files.length > 0);
+  const hasAttachments = Object.values(attachments).some(files => files && files.length > 0);
   
   return (
     <div className="song-attachments">
@@ -149,8 +300,46 @@ const SongAttachments = ({ songId, readOnly = false }) => {
         disabled={uploading}
       />
       
+      {/* YouTube link input */}
+      {showYoutubeInput && (
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-md">
+          <div className="flex items-center mb-2">
+            <FaYoutube className="text-red-600 mr-2" />
+            <span className="font-medium text-sm">Add YouTube Link</span>
+          </div>
+          
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Paste YouTube URL here"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              className="flex-1 p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+            />
+            <div className="flex gap-1">
+              <button
+                onClick={handleAddYoutubeLink}
+                disabled={uploading || !youtubeUrl.trim()}
+                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setShowYoutubeInput(false);
+                  setYoutubeUrl('');
+                }}
+                className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-sm rounded-md hover:bg-gray-400 dark:hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Upload controls */}
-      {!readOnly && (
+      {!readOnly && !showYoutubeInput && (
         <div className="mb-4">
           <div className="text-sm text-gray-500 mb-2">Add Attachment:</div>
           <div className="flex flex-wrap gap-2">
@@ -194,9 +383,13 @@ const SongAttachments = ({ songId, readOnly = false }) => {
                 
                 <ul className="divide-y divide-gray-200 border border-gray-200 rounded-md overflow-hidden">
                   {files.map(file => (
-                    <li key={file.name} className="px-4 py-3 bg-white flex items-center justify-between hover:bg-gray-50">
+                    <li key={file.id || file.name} className="px-4 py-3 bg-white flex items-center justify-between hover:bg-gray-50">
                       <div className="flex items-center">
-                        {getFileIcon(file.name)}
+                        {type.value === 'youtube-links' ? (
+                          <FaYoutube className="text-red-600" />
+                        ) : (
+                          getFileIcon(file.name)
+                        )}
                         <span className="ml-2 text-sm text-gray-600 truncate max-w-xs">
                           {file.name}
                         </span>
@@ -205,19 +398,18 @@ const SongAttachments = ({ songId, readOnly = false }) => {
                       <div className="flex space-x-2">
                         <a
                           href={file.url}
-                          download
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-blue-500 hover:text-blue-700"
-                          title="Download"
+                          title={type.value === 'youtube-links' ? 'View on YouTube' : 'Download'}
                         >
-                          <FaDownload />
+                          {type.value === 'youtube-links' ? <FaLink /> : <FaDownload />}
                         </a>
                         
                         {!readOnly && (
                           <button
                             type="button"
-                            onClick={() => handleDelete(type.value, file.name)}
+                            onClick={() => handleDelete(type.value, file.name, file.id)}
                             className="text-red-500 hover:text-red-700"
                             title="Delete"
                           >
@@ -237,7 +429,7 @@ const SongAttachments = ({ songId, readOnly = false }) => {
           No attachments available for this song.
           {!readOnly && (
             <p className="mt-1 text-xs">
-              Use the buttons above to add chord charts, sheet music, or backing tracks.
+              Use the buttons above to add chord charts, sheet music, backing tracks, or YouTube links.
             </p>
           )}
         </div>

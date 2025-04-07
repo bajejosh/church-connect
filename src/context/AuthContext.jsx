@@ -1,17 +1,21 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { formatPath, getBasePath } from '../utils/pathUtils'
 
 const AuthContext = createContext()
 
-// Helper function to get the base URL that works in both dev and prod environments
-const getBaseUrl = () => {
-  // For GitHub Pages (production)
-  if (window.location.hostname === 'bajejosh.github.io') {
-    return 'https://bajejosh.github.io/church-connect/#'
+// Helper function to get the full site URL with base path
+const getSiteUrl = () => {
+  const origin = window.location.origin
+  const basePath = getBasePath()
+  
+  // For hash router, we need to include the hash
+  if (window.location.hostname === 'bajejosh.github.io' || basePath.startsWith('/church-connect')) {
+    return `${origin}${basePath}#`
   }
-  // For local development
-  return window.location.origin
+  
+  return `${origin}${basePath}`
 }
 
 export const AuthProvider = ({ children }) => {
@@ -52,7 +56,7 @@ export const AuthProvider = ({ children }) => {
         password,
         options: { 
           data: meta,
-          emailRedirectTo: `${getBaseUrl()}/dashboard`
+          emailRedirectTo: `${getSiteUrl()}/auth/callback`
         }
       })
       
@@ -68,7 +72,10 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          redirectTo: `${getSiteUrl()}/auth/callback`
+        }
       })
       
       if (error) throw error
@@ -81,19 +88,41 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      // Force clear the user state first for immediate UI feedback
       setUser(null)
+      
+      // Clear any local storage items containing user data
+      localStorage.removeItem('userFullName')
+      localStorage.removeItem('userAvatarUrl')
+      
+      // Then attempt to sign out from Supabase - but handle the error gracefully
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.warn('Warning during sign out process:', error.message)
+        // Don't throw the error - just log it and continue
+        
+        // If it's a missing session error, we can safely ignore it
+        if (error.message.includes('Auth session missing')) {
+          console.log('Session was already expired or invalid')
+        }
+      }
+      
+      // Manually navigate to login with the correct base path
+      window.location.href = `${window.location.origin}${formatPath('login')}`
     } catch (error) {
-      setError(error.message)
-      throw error
+      console.warn('Error in sign out process:', error.message)
+      // Still don't throw the error - we've already cleared the user state
+      
+      // Ensure we still redirect to login
+      window.location.href = `${window.location.origin}${formatPath('login')}`
     }
   }
 
   const resetPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${getBaseUrl()}/reset-password`,
+        redirectTo: `${getSiteUrl()}/auth/callback?reset=true`,
       })
       
       if (error) throw error
@@ -121,7 +150,10 @@ export const AuthProvider = ({ children }) => {
       // First update auth metadata if needed
       if (profileData.email) {
         const { error: updateError } = await supabase.auth.updateUser({
-          email: profileData.email
+          email: profileData.email,
+          options: {
+            emailRedirectTo: `${getSiteUrl()}/auth/callback`
+          }
         })
         if (updateError) throw updateError
       }

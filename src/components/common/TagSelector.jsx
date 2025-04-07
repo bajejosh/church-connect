@@ -68,7 +68,7 @@ const TagSelector = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           {label}
         </label>
       )}
@@ -78,13 +78,13 @@ const TagSelector = ({
         {tags.map(tag => (
           <div 
             key={tag}
-            className="flex items-center bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
+            className="flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 px-2 py-1 rounded-md text-sm"
           >
             <span>{tag}</span>
             <button 
               type="button"
               onClick={() => handleRemoveTag(tag)}
-              className="ml-1 p-1 rounded-full hover:bg-blue-200"
+              className="ml-1 p-1 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
               aria-label={`Remove ${tag}`}
             >
               <FaTimes size={10} />
@@ -99,7 +99,7 @@ const TagSelector = ({
           type="text"
           id={name}
           name={name}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
           placeholder={placeholder}
           value={inputValue}
           onChange={(e) => {
@@ -116,11 +116,11 @@ const TagSelector = ({
         
         {/* Dropdown options */}
         {showDropdown && inputValue && filteredOptions.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700 max-h-60 overflow-auto">
             {filteredOptions.map(option => (
               <div
                 key={option}
-                className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center"
                 onMouseDown={() => handleAddTag(option)}
               >
                 <FaPlus className="text-blue-500 mr-2" size={12} />
@@ -132,9 +132,9 @@ const TagSelector = ({
         
         {/* Show "Add custom tag" if input has value, no matches, and custom tags allowed */}
         {showDropdown && inputValue && filteredOptions.length === 0 && allowCustom && (
-          <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border border-gray-200">
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 shadow-lg rounded-md border border-gray-200 dark:border-gray-700">
             <div
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center"
+              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex items-center"
               onMouseDown={() => handleAddTag(inputValue)}
             >
               <FaPlus className="text-blue-500 mr-2" size={12} />

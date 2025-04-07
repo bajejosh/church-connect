@@ -189,19 +189,19 @@ const SongForm = () => {
       <div className="flex items-center justify-between mb-6">
         <button 
           onClick={() => navigate(isEditing ? `/songs/${id}` : '/songs')}
-          className="inline-flex items-center text-gray-600 hover:text-gray-900"
+          className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300"
         >
           <FaArrowLeft className="mr-1" /> Back
         </button>
         
-        <h1 className="text-2xl font-bold text-center flex-1 mx-4">
+        <h1 className="text-2xl font-bold text-center flex-1 mx-4 text-gray-900 dark:text-white">
           {isEditing ? 'Edit Song' : 'Add New Song'}
         </h1>
         
         {isEditing && (
           <button 
             onClick={handleDelete}
-            className="text-red-600 hover:text-red-800"
+            className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
             title="Delete song"
             disabled={saving}
           >
@@ -212,13 +212,13 @@ const SongForm = () => {
       
       {/* Error message */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+        <div className="bg-red-50 dark:bg-red-900 border-l-4 border-red-500 dark:border-red-700 p-4 mb-6">
           <div className="flex">
             <div className="flex-shrink-0">
-              <FaExclamationTriangle className="h-5 w-5 text-red-400" />
+              <FaExclamationTriangle className="h-5 w-5 text-red-400 dark:text-red-300" />
             </div>
             <div className="ml-3">
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
             </div>
           </div>
         </div>
@@ -227,13 +227,13 @@ const SongForm = () => {
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium mb-4">Basic Information</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Basic Information</h2>
           
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -242,16 +242,18 @@ const SongForm = () => {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                className={`mt-1 block w-full border ${validationErrors.title ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                className={`mt-1 block w-full border ${validationErrors.title ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'} 
+                          rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                          focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm`}
               />
               {validationErrors.title && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.title}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.title}</p>
               )}
             </div>
             
             {/* Artist */}
             <div>
-              <label htmlFor="artist" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="artist" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Artist / Composer
               </label>
               <input
@@ -260,13 +262,15 @@ const SongForm = () => {
                 name="artist"
                 value={formData.artist}
                 onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm"
               />
             </div>
             
             {/* Key */}
             <div>
-              <label htmlFor="default_key" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="default_key" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Default Key {formData.chords && <span className="text-red-500">*</span>}
               </label>
               <select
@@ -274,7 +278,10 @@ const SongForm = () => {
                 name="default_key"
                 value={formData.default_key}
                 onChange={handleChange}
-                className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border ${validationErrors.default_key ? 'border-red-300' : 'border-gray-300'} focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md`}
+                className={`mt-1 block w-full pl-3 pr-10 py-2 text-base border 
+                          ${validationErrors.default_key ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'} 
+                          bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                          focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm rounded-md`}
               >
                 <option value="">Select a key</option>
                 {musicalKeys.map((key) => (
@@ -284,13 +291,13 @@ const SongForm = () => {
                 ))}
               </select>
               {validationErrors.default_key && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.default_key}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.default_key}</p>
               )}
             </div>
             
             {/* Tempo */}
             <div>
-              <label htmlFor="tempo" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="tempo" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Tempo (BPM)
               </label>
               <input
@@ -301,20 +308,23 @@ const SongForm = () => {
                 onChange={handleChange}
                 min="20"
                 max="300"
-                className={`mt-1 block w-full border ${validationErrors.tempo ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                className={`mt-1 block w-full border 
+                          ${validationErrors.tempo ? 'border-red-300 dark:border-red-700' : 'border-gray-300 dark:border-gray-600'} 
+                          rounded-md shadow-sm py-2 px-3 bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                          focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm`}
               />
               {validationErrors.tempo ? (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.tempo}</p>
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{validationErrors.tempo}</p>
               ) : (
-                <p className="mt-1 text-xs text-gray-500">Typical range: 60-180 BPM</p>
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Typical range: 60-180 BPM</p>
               )}
             </div>
           </div>
         </div>
         
         {/* Tags Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium mb-4">Tags</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Tags</h2>
           <SongTags 
             selectedTags={formData.tags} 
             onChange={handleTagsChange} 
@@ -322,14 +332,14 @@ const SongForm = () => {
         </div>
         
         {/* Chords Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-medium">Chord Chart</h2>
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Chord Chart</h2>
             {formData.chords && (
               <button
                 type="button"
                 onClick={toggleChordPreview}
-                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800"
+                className="inline-flex items-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
               >
                 {showChordPreview ? (
                   <>
@@ -346,8 +356,8 @@ const SongForm = () => {
           
           {/* Chord Preview */}
           {showChordPreview && formData.chords && (
-            <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Preview:</h3>
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md">
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Preview:</h3>
               <ChordDisplay content={formData.chords} />
             </div>
           )}
@@ -361,35 +371,39 @@ const SongForm = () => {
         </div>
         
         {/* Lyrics Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium mb-4">Lyrics</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Lyrics</h2>
           <textarea
             id="lyrics"
             name="lyrics"
             value={formData.lyrics}
             onChange={handleChange}
             rows={15}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 
+                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                     focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm"
             placeholder="Enter lyrics here..."
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Tip: Include section markers like [Verse], [Chorus], etc. for better organization.
           </p>
         </div>
         
         {/* Notes Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-medium mb-4">Additional Notes</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium mb-4 text-gray-900 dark:text-white">Additional Notes</h2>
           <textarea
             id="notes"
             name="notes"
             value={formData.notes}
             onChange={handleChange}
             rows={4}
-            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            className="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 
+                     bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                     focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm"
             placeholder="Enter any additional notes, performance instructions, etc."
           />
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Include notes about song structure, performance tips, or arrangement details.
           </p>
         </div>
@@ -399,7 +413,9 @@ const SongForm = () => {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md 
+                     shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
           >
             {saving ? (
               <>

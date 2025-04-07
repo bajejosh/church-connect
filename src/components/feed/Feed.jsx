@@ -330,14 +330,14 @@ const Feed = ({ currentUserId, churchId }) => {
       {currentUserId && <PostComposer onPostCreated={handlePostCreated} churchId={churchId} />}
       
       {/* Filter bar */}
-      <div className="bg-white p-3 rounded-lg shadow flex items-center space-x-1 overflow-x-auto">
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow flex items-center space-x-1 overflow-x-auto">
         <FaFilter className="text-gray-400 mr-2 flex-shrink-0" />
         
         <button
           className={`px-3 py-1 rounded-full text-sm font-medium ${
             activeFilter === 'all'
-              ? 'bg-blue-100 text-blue-800'
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
           onClick={() => setActiveFilter('all')}
         >
@@ -348,8 +348,8 @@ const Feed = ({ currentUserId, churchId }) => {
           <button
             className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
               activeFilter === 'following'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => setActiveFilter('following')}
           >
@@ -361,8 +361,8 @@ const Feed = ({ currentUserId, churchId }) => {
           <button
             className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
               activeFilter === 'church'
-                ? 'bg-blue-100 text-blue-800'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
             }`}
             onClick={() => setActiveFilter('church')}
           >
@@ -373,8 +373,8 @@ const Feed = ({ currentUserId, churchId }) => {
         <button
           className={`px-3 py-1 rounded-full text-sm font-medium ${
             activeFilter === 'event'
-              ? 'bg-blue-100 text-blue-800'
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
           onClick={() => setActiveFilter('event')}
         >
@@ -384,8 +384,8 @@ const Feed = ({ currentUserId, churchId }) => {
         <button
           className={`px-3 py-1 rounded-full text-sm font-medium ${
             activeFilter === 'prayer'
-              ? 'bg-blue-100 text-blue-800'
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
           onClick={() => setActiveFilter('prayer')}
         >
@@ -395,8 +395,8 @@ const Feed = ({ currentUserId, churchId }) => {
         <button
           className={`px-3 py-1 rounded-full text-sm font-medium ${
             activeFilter === 'announcement'
-              ? 'bg-blue-100 text-blue-800'
-              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300'
+              : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
           }`}
           onClick={() => setActiveFilter('announcement')}
         >
@@ -406,13 +406,13 @@ const Feed = ({ currentUserId, churchId }) => {
       
       {/* Posts list */}
       {error ? (
-        <div className="bg-red-100 p-4 rounded-md text-red-800">
+        <div className="bg-red-100 dark:bg-red-900 p-4 rounded-md text-red-800 dark:text-red-200">
           Error loading posts: {error}
         </div>
       ) : posts.length === 0 && !loading ? (
-        <div className="bg-white p-8 rounded-lg shadow text-center">
-          <h3 className="text-lg font-medium text-gray-900">No posts found</h3>
-          <p className="mt-1 text-gray-500">
+        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow text-center">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No posts found</h3>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">
             {activeFilter === 'following' 
               ? "You're not following anyone yet, or the people you follow haven't posted anything."
               : activeFilter === 'church'
@@ -431,20 +431,20 @@ const Feed = ({ currentUserId, churchId }) => {
           {loading && (
             <div className="space-y-4">
               {[1, 2].map(i => (
-                <div key={i} className="bg-white rounded-lg shadow p-4 space-y-3">
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 space-y-3">
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+                    <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
                     <div className="space-y-1 flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/6 animate-pulse"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 animate-pulse"></div>
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/6 animate-pulse"></div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 animate-pulse"></div>
                   </div>
-                  <div className="h-40 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
                 </div>
               ))}
             </div>
@@ -453,7 +453,7 @@ const Feed = ({ currentUserId, churchId }) => {
           {hasMore && !loading && (
             <button
               onClick={handleLoadMore}
-              className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md"
+              className="w-full py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md"
             >
               Load more
             </button>

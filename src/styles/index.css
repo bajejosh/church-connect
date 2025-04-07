@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import custom input styles */
+@import './input.css';
+
+/* Additional global styles */
+body {
+  @apply bg-gray-50 dark:bg-dark-primary text-gray-900 dark:text-dark-text;
+}
+
+/* Dark mode scrollbar */
+body.dark {
+  scrollbar-color: #444 #222;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  @apply dark:bg-dark-secondary;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; 
+  @apply dark:bg-dark-accent rounded-md;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+  @apply dark:bg-dark-muted;
+}

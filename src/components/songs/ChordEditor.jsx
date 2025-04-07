@@ -78,11 +78,11 @@ Simple progression
       {/* Quick insert buttons for common chords */}
       <div className="mb-2">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-gray-600">Quick Insert Chords:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Quick Insert Chords:</span>
           <button
             type="button"
             onClick={() => setShowHelp(!showHelp)}
-            className="text-blue-600 hover:text-blue-800 text-sm flex items-center"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm flex items-center"
           >
             <FaQuestionCircle className="mr-1" />
             {showHelp ? 'Hide Help' : 'Show Help'}
@@ -95,7 +95,10 @@ Simple progression
               key={chord}
               type="button"
               onClick={() => handleInsertChord(chord)}
-              className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="inline-flex items-center px-2 py-1 border border-gray-300 dark:border-gray-600 
+                       text-xs font-medium rounded shadow-sm text-gray-700 dark:text-gray-200 
+                       bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               {chord}
             </button>
@@ -105,14 +108,17 @@ Simple progression
 
       {/* Section labels */}
       <div className="mb-3">
-        <span className="text-sm text-gray-600">Add Section:</span>
+        <span className="text-sm text-gray-600 dark:text-gray-400">Add Section:</span>
         <div className="flex flex-wrap gap-1 mt-1">
           {['Verse', 'Chorus', 'Bridge', 'Intro', 'Outro', 'Pre-Chorus'].map((section) => (
             <button
               key={section}
               type="button"
               onClick={() => handleInsertSection(section)}
-              className="inline-flex items-center px-2 py-1 border border-gray-300 text-xs font-medium rounded shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="inline-flex items-center px-2 py-1 border border-gray-300 dark:border-gray-600 
+                       text-xs font-medium rounded shadow-sm text-gray-700 dark:text-gray-200 
+                       bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 
+                       focus:outline-none focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               <FaPlus className="mr-1 h-3 w-3" />
               {section}
@@ -123,16 +129,16 @@ Simple progression
 
       {/* Help section */}
       {showHelp && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">Chord Chart Formatting Help</h4>
-          <p className="text-xs text-blue-700 mb-2">
+        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-800 rounded-md">
+          <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">Chord Chart Formatting Help</h4>
+          <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
             Format your chord chart by placing chords above lyrics with spaces between them.
             Use section markers like [Verse] or [Chorus] to organize your song.
           </p>
-          <div className="bg-white p-2 rounded text-xs font-mono">
-            <pre className="whitespace-pre-wrap">{exampleChart}</pre>
+          <div className="bg-white dark:bg-gray-800 p-2 rounded text-xs font-mono">
+            <pre className="whitespace-pre-wrap text-gray-900 dark:text-gray-200">{exampleChart}</pre>
           </div>
-          <p className="text-xs text-blue-700 mt-2">
+          <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
             Tip: Make sure to keep chord names short (C, G, Am, etc.) and use spaces to align them with lyrics.
           </p>
         </div>
@@ -144,11 +150,14 @@ Simple progression
         value={value}
         onChange={handleEditorChange}
         rows={rows}
-        className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"
+        className="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 
+                 bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 
+                 sm:text-sm font-mono"
         placeholder="Enter chords here..."
       />
       
-      <div className="mt-1 text-xs text-gray-500">
+      <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
         Use monospaced formatting for chords. Press Tab for indentation.
       </div>
     </div>

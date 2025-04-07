@@ -8,7 +8,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // You can customize your color palette here
         blue: {
           50: '#f0f9ff',
           100: '#e0f2fe',
@@ -24,7 +23,7 @@ export default {
         dark: {
           primary: '#121212',
           secondary: '#1e1e1e',
-          accent: '#272727',
+          accent: '#242424',
           text: '#e2e2e2',
           muted: '#a0a0a0'
         }
@@ -33,7 +32,21 @@ export default {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-dark': 'linear-gradient(to bottom right, rgb(36, 36, 44), rgb(18, 18, 24))'
+        'gradient-dark': 'linear-gradient(135deg, rgb(28, 28, 42), rgb(12, 12, 24))',
+        'gradient-dark-purple': 'linear-gradient(135deg, rgb(34, 28, 50), rgb(15, 12, 30))',
+        'gradient-dark-blue': 'linear-gradient(135deg, rgb(20, 30, 48), rgb(10, 15, 30))',
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            'code::before': {
+              content: '""',
+            },
+            'code::after': {
+              content: '""',
+            },
+          },
+        },
       },
     },
   },

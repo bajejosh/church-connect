@@ -131,8 +131,8 @@ const PostComposer = ({ onPostCreated, churchId }) => {
       type="button"
       className={`flex items-center px-3 py-1.5 rounded-full text-sm ${
         active 
-          ? 'bg-blue-100 text-blue-800' 
-          : 'text-gray-600 hover:bg-gray-100'
+          ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300' 
+          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
       }`}
       onClick={() => handlePostTypeChange(type)}
     >
@@ -145,7 +145,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
   const { avatar_url, full_name } = user?.user_metadata || {};
   
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
       <form onSubmit={handleSubmit}>
         <div className="p-4">
           {/* User info and text area */}
@@ -169,7 +169,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
             <div className="flex-1">
               <textarea
                 placeholder={`What's on your mind, ${full_name?.split(' ')[0] || 'there'}?`}
-                className="w-full border rounded-lg p-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-lg text-gray-700 placeholder-gray-400 bg-white resize-none"
+                className="w-full border rounded-lg p-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-lg text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 dark:border-gray-700 resize-none"
                 rows={expanded ? 4 : 2}
                 value={content}
                 onChange={handleContentChange}
@@ -212,9 +212,9 @@ const PostComposer = ({ onPostCreated, churchId }) => {
         {expanded && (
           <>
             {/* Post types */}
-            <div className="px-4 py-2 border-t border-gray-100">
+            <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
               <div className="flex items-center space-x-2 overflow-x-auto pb-1">
-                <span className="text-sm text-gray-500 whitespace-nowrap">Post type:</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">Post type:</span>
                 
                 <PostTypeButton 
                   type="regular" 
@@ -251,24 +251,24 @@ const PostComposer = ({ onPostCreated, churchId }) => {
             {/* Media upload buttons */}
             {/* Anonymous option for prayer requests */}
             {postType === 'prayer' && (
-              <div className="px-4 py-2 border-t border-gray-100">
-                <label className="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
+              <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
+                <label className="flex items-center space-x-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={isAnonymous}
                     onChange={(e) => setIsAnonymous(e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
                   />
                   <span>Post anonymously</span>
                 </label>
               </div>
             )}
             
-            <div className="px-4 py-2 flex items-center justify-between border-t border-gray-100">
+            <div className="px-4 py-2 flex items-center justify-between border-t border-gray-100 dark:border-gray-700">
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  className="flex items-center text-gray-600 hover:bg-gray-100 rounded-md px-3 py-1.5"
+                  className="flex items-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-3 py-1.5"
                   onClick={() => fileInputRef.current.click()}
                 >
                   <FaImage className="text-green-500 mr-1.5" />
@@ -277,7 +277,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
                 
                 <button
                   type="button"
-                  className="flex items-center text-gray-600 hover:bg-gray-100 rounded-md px-3 py-1.5"
+                  className="flex items-center text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md px-3 py-1.5"
                   onClick={() => fileInputRef.current.click()}
                 >
                   <FaVideo className="text-red-500 mr-1.5" />
@@ -297,7 +297,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
               <div className="flex space-x-2">
                 <button
                   type="button"
-                  className="px-4 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-1.5 text-sm border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                   onClick={() => {
                     setExpanded(false);
                     setContent('');

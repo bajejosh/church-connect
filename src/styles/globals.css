@@ -2,90 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  html {
-    -webkit-tap-highlight-color: transparent;
+@layer utilities {
+  .bg-gradient-dark {
+    background: linear-gradient(135deg, rgb(28, 28, 42), rgb(12, 12, 24));
   }
   
-  body {
-    @apply bg-gray-50 text-gray-900 transition-colors duration-200;
+  .bg-gradient-dark-purple {
+    background: linear-gradient(135deg, rgb(34, 28, 50), rgb(15, 12, 30));
   }
   
-  .dark body {
-    @apply bg-gradient-dark text-dark-text;
-  }
-  
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    @apply text-white;
-  }
-  
-  .dark .bg-white {
-    @apply bg-dark-secondary;
-  }
-  
-  .dark .text-gray-900 {
-    @apply text-dark-text;
-  }
-  
-  .dark .text-gray-800 {
-    @apply text-dark-text;
-  }
-  
-  .dark .text-gray-700 {
-    @apply text-dark-text;
-  }
-  
-  .dark .text-gray-600 {
-    @apply text-dark-muted;
-  }
-  
-  .dark .text-gray-500 {
-    @apply text-dark-muted;
-  }
-  
-  .dark .text-gray-400 {
-    @apply text-dark-muted/80;
-  }
-  
-  .dark .border-gray-100 {
-    @apply border-gray-800;
-  }
-  
-  .dark .border-gray-200 {
-    @apply border-gray-800;
-  }
-  
-  .dark .border-gray-300 {
-    @apply border-gray-700;
-  }
-  
-  .dark .shadow {
-    @apply shadow-lg shadow-black/20;
-  }
-  
-  .dark .bg-gray-50 {
-    @apply bg-dark-accent;
-  }
-  
-  .dark .bg-gray-100 {
-    @apply bg-dark-accent;
-  }
-  
-  .dark .hover\:bg-gray-50:hover {
-    @apply hover:bg-dark-accent;
-  }
-  
-  .dark .hover\:bg-gray-100:hover {
-    @apply hover:bg-dark-primary;
+  .bg-gradient-dark-blue {
+    background: linear-gradient(135deg, rgb(20, 30, 48), rgb(10, 15, 30));
   }
 }
 
-/* Custom utility classes */
-@layer utilities {
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+/* Additional global styles can be added here */
+html.dark {
+  @apply bg-gradient-dark;
+  color: #ffffff;
+}
+
+html.dark body {
+  @apply bg-transparent;
+}
+
+/* Fix for circular dependency between dark mode text classes */
+.dark .text-gray-500 {
+  color: rgba(156, 163, 175, 1);
+}
+
+.dark .text-gray-400 {
+  color: rgba(156, 163, 175, 0.8);
+}
+
+/* Improve transition between dark and light mode */
+html {
+  transition: background-color 0.3s ease;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

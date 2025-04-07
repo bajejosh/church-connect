@@ -121,11 +121,11 @@ const Calendar = () => {
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
     return (
-      <div className="bg-white rounded-lg shadow">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         {/* Days of week header */}
-        <div className="grid grid-cols-7 gap-1 border-b p-2">
+        <div className="grid grid-cols-7 gap-1 border-b dark:border-gray-700 p-2">
           {daysOfWeek.map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500">
+            <div key={day} className="text-center text-sm font-medium text-gray-500 dark:text-gray-400">
               {day}
             </div>
           ))}
@@ -142,8 +142,8 @@ const Calendar = () => {
               <div 
                 key={day.valueOf()}
                 className={`min-h-[80px] p-1 border rounded ${
-                  isCurrentMonth ? 'bg-white' : 'bg-gray-50 text-gray-400'
-                } ${isToday ? 'border-blue-500' : 'border-gray-200'}`}
+                  isCurrentMonth ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-900 text-gray-400 dark:text-gray-500'
+                } ${isToday ? 'border-blue-500' : 'border-gray-200 dark:border-gray-700'}`}
               >
                 <div className="text-right">
                   <span className={`text-sm font-medium ${
@@ -159,8 +159,8 @@ const Calendar = () => {
                       key={event.id}
                       className={`truncate text-xs rounded p-1 cursor-pointer ${
                         event.event_type === 'service' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-green-100 text-green-800'
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300' 
+                          : 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300'
                       }`}
                       title={event.title}
                       onClick={() => handleEventClick(event)}
@@ -171,7 +171,7 @@ const Calendar = () => {
                   ))}
                   
                   {dayEvents.length > 3 && (
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       +{dayEvents.length - 3} more
                     </div>
                   )}
@@ -188,8 +188,8 @@ const Calendar = () => {
   const renderQuarterView = () => {
     // Implementation for quarterly view
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500">Quarterly view coming soon</p>
+      <div className="text-center py-20 text-gray-500 dark:text-gray-400">
+        <p className="text-gray-500 dark:text-gray-400">Quarterly view coming soon</p>
       </div>
     );
   };
@@ -198,8 +198,8 @@ const Calendar = () => {
   const renderYearView = () => {
     // Implementation for yearly view
     return (
-      <div className="text-center py-20">
-        <p className="text-gray-500">Yearly view coming soon</p>
+      <div className="text-center py-20 text-gray-500 dark:text-gray-400">
+        <p className="text-gray-500 dark:text-gray-400">Yearly view coming soon</p>
       </div>
     );
   };
@@ -207,7 +207,7 @@ const Calendar = () => {
   return (
     <div className="space-y-4 pb-16 md:pb-0">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Calendar</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Calendar</h1>
         
         <div className="flex space-x-2">
           <button
@@ -226,13 +226,13 @@ const Calendar = () => {
         <div className="flex items-center space-x-2">
           <button
             onClick={goToPrevious}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             aria-label="Previous"
           >
             <FaChevronLeft />
           </button>
           
-          <h2 className="text-lg font-medium">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
             {view === 'month' && currentDate.format('MMMM YYYY')}
             {view === 'quarter' && `Q${Math.ceil((currentDate.month() + 1) / 3)} ${currentDate.year()}`}
             {view === 'year' && currentDate.format('YYYY')}
@@ -240,29 +240,29 @@ const Calendar = () => {
           
           <button
             onClick={goToNext}
-            className="p-2 rounded-full hover:bg-gray-100"
+            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
             aria-label="Next"
           >
             <FaChevronRight />
           </button>
         </div>
         
-        <div className="border rounded-md overflow-hidden">
+        <div className="border dark:border-gray-700 rounded-md overflow-hidden">
           <button
             onClick={() => setView('month')}
-            className={`px-3 py-1 text-sm ${view === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            className={`px-3 py-1 text-sm ${view === 'month' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             Month
           </button>
           <button
             onClick={() => setView('quarter')}
-            className={`px-3 py-1 text-sm ${view === 'quarter' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            className={`px-3 py-1 text-sm ${view === 'quarter' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             Quarter
           </button>
           <button
             onClick={() => setView('year')}
-            className={`px-3 py-1 text-sm ${view === 'year' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+            className={`px-3 py-1 text-sm ${view === 'year' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}
           >
             Year
           </button>
@@ -289,11 +289,11 @@ const Calendar = () => {
       <div className="flex items-center justify-end space-x-4 text-sm">
         <div className="flex items-center">
           <span className="w-3 h-3 bg-blue-100 rounded mr-1"></span>
-          <span className="text-gray-600">Services</span>
+          <span className="text-gray-600 dark:text-gray-400">Services</span>
         </div>
         <div className="flex items-center">
           <span className="w-3 h-3 bg-green-100 rounded mr-1"></span>
-          <span className="text-gray-600">Other Events</span>
+          <span className="text-gray-600 dark:text-gray-400">Other Events</span>
         </div>
       </div>
     </div>

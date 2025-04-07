@@ -131,24 +131,24 @@ const Dashboard = () => {
   // If still loading, show skeleton
   if (loading) {
     return (
-      <div className="space-y-6 pt-6">
-        <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
+      <div className="space-y-4 pt-2">
+        <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 rounded animate-pulse"></div>
+            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
           ))}
         </div>
-        <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+        <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 pt-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Feed</h1>
+    <div className="space-y-4 pt-2">
+    <div>
+    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Feed</h1>
         {churchInfo && (
-          <p className="text-gray-600">{churchInfo.name}</p>
+          <p className="text-gray-600 dark:text-gray-300">{churchInfo.name}</p>
         )}
         {!churchInfo && (
           <div className="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
@@ -174,34 +174,34 @@ const Dashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Link 
               to="/calendar" 
-              className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <FaCalendarAlt className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900">Calendar</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Calendar</span>
             </Link>
             
             <Link 
               to="/songs" 
-              className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <FaMusic className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900">Songs</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Songs</span>
             </Link>
             
             <Link 
               to="/prayer-requests" 
-              className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <FaPray className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900">Prayer</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Prayer</span>
             </Link>
             
             <Link 
               to="/teams" 
-              className="flex flex-col items-center justify-center p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
             >
               <FaUsers className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900">Teams</span>
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Teams</span>
             </Link>
           </div>
           
@@ -212,31 +212,31 @@ const Dashboard = () => {
         {/* Right sidebar */}
         <div className="space-y-6">
           {/* Upcoming events */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Upcoming Events</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Upcoming Events</h2>
               <Link to="/calendar" className="text-sm text-blue-600 font-medium">
                 View all →
               </Link>
             </div>
             
             {upcomingEvents.length === 0 ? (
-              <p className="text-gray-500 text-sm">No upcoming events in the next 7 days</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming events in the next 7 days</p>
             ) : (
               <div className="space-y-3">
                 {upcomingEvents.map(event => (
-                  <div key={event.id} className="flex items-start p-3 border border-gray-100 rounded-md hover:bg-gray-50">
+                  <div key={event.id} className="flex items-start p-3 border border-gray-100 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
                     <div className="min-w-[60px] text-center">
-                      <div className="font-bold text-gray-900">{dayjs(event.start_time).format('MMM')}</div>
+                      <div className="font-bold text-gray-900 dark:text-gray-100">{dayjs(event.start_time).format('MMM')}</div>
                       <div className="text-2xl font-bold text-blue-600">{dayjs(event.start_time).format('DD')}</div>
                     </div>
                     <div className="ml-3">
-                      <div className="font-medium text-gray-900">{event.title}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{event.title}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {dayjs(event.start_time).format('h:mm A')} - {dayjs(event.end_time).format('h:mm A')}
                       </div>
                       {event.location && (
-                        <div className="text-sm text-gray-500">{event.location}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{event.location}</div>
                       )}
                     </div>
                   </div>
@@ -246,25 +246,25 @@ const Dashboard = () => {
           </div>
           
           {/* Recent prayer requests */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Prayer Requests</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Prayer Requests</h2>
               <Link to="/prayer-requests" className="text-sm text-blue-600 font-medium">
                 View all →
               </Link>
             </div>
             
             {recentPrayers.length === 0 ? (
-              <p className="text-gray-500 text-sm">No prayer requests yet</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No prayer requests yet</p>
             ) : (
               <div className="space-y-3">
                 {recentPrayers.map(prayer => (
                   <div key={prayer.id} className="p-3 border-b last:border-0">
-                    <div className="font-medium text-gray-900">{prayer.title}</div>
-                    <div className="text-sm text-gray-500 line-clamp-2">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">{prayer.title}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
                       {prayer.description}
                     </div>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       {prayer.is_anonymous ? 'Anonymous' : 'User'} • {dayjs(prayer.created_at).fromNow()}
                     </div>
                   </div>
@@ -274,25 +274,25 @@ const Dashboard = () => {
           </div>
           
           {/* Recent songs */}
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Recent Songs</h2>
+              <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Songs</h2>
               <Link to="/songs" className="text-sm text-blue-600 font-medium">
                 View all →
               </Link>
             </div>
             
             {recentSongs.length === 0 ? (
-              <p className="text-gray-500 text-sm">No songs added yet</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No songs added yet</p>
             ) : (
               <div className="space-y-3">
                 {recentSongs.map(song => (
                   <div key={song.id} className="flex items-center p-3 border-b last:border-0">
                     <FaMusic className="text-blue-600 mr-3" />
                     <div>
-                      <div className="font-medium text-gray-900">{song.title}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{song.title}</div>
                       {song.artist && (
-                        <div className="text-sm text-gray-500">{song.artist}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">{song.artist}</div>
                       )}
                     </div>
                   </div>

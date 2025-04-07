@@ -245,75 +245,48 @@ const ServiceForm = () => {
       if (serviceId) {
         console.log('Service ID for songs and team members:', serviceId);
         
-        // If editing, first delete existing song associations not in the current selection
-        if (isEditMode) {
-          const existingIds = selectedSongs
-            .filter(song => song.id)
-            .map(song => song.id);
-          
-          if (existingIds.length > 0) {
-            const { error } = await supabase
-              .from('event_songs')
-              .delete()
-              .eq('event_id', serviceId)
-              .not('id', 'in', `(${existingIds.join(',')})`);
-            
-            if (error) {
-              console.error('Error deleting songs:', error);
-              throw error;
-            }
-          } else {
-            // If no existing IDs, delete all associations
-            const { error } = await supabase
+        // FIXED: Changed song handling to avoid unique constraint errors
+        try {
+          // For edit mode, delete all existing songs first
+          if (isEditMode) {
+            // Delete all existing song associations to avoid conflicts
+            const { error: deleteError } = await supabase
               .from('event_songs')
               .delete()
               .eq('event_id', serviceId);
             
-            if (error) {
-              console.error('Error deleting all songs:', error);
-              throw error;
+            if (deleteError) {
+              console.error('Error deleting songs:', deleteError);
+              throw deleteError;
             }
           }
-        }
-        
-        // Create or update song associations
-        for (const song of selectedSongs) {
-          if (song.id) {
-            // Update existing association
-            const { error } = await supabase
-              .from('event_songs')
-              .update({
-                song_order: song.order,
-                key: song.key,
-                notes: song.notes
-              })
-              .eq('id', song.id);
-            
-            if (error) {
-              console.error('Error updating song:', error);
-              throw error;
-            }
-          } else {
-            // Create new association
-            const newSong = {
+          
+          // Then insert all songs at once with their new order
+          if (selectedSongs.length > 0) {
+            // Prepare all songs for insertion (both new ones and previously existing ones)
+            const songsToInsert = selectedSongs.map(song => ({
               event_id: serviceId,
               song_id: song.songId,
               song_order: song.order,
-              key: song.key,
-              notes: song.notes
-            };
+              key: song.key || null,
+              notes: song.notes || null
+            }));
             
-            console.log('Adding new song to service:', newSong);
+            console.log('Inserting songs:', songsToInsert);
             
-            const { error } = await supabase
+            // Insert all songs at once
+            const { error: insertError } = await supabase
               .from('event_songs')
-              .insert(newSong);
+              .insert(songsToInsert);
             
-            if (error) {
-              console.error('Error adding song:', error);
-              throw error;
+            if (insertError) {
+              console.error('Error inserting songs:', insertError);
+              throw insertError;
             }
           }
+        } catch (songError) {
+          console.error('Error handling songs:', songError);
+          throw songError;
         }
         
         // Handle team member assignments
@@ -415,24 +388,24 @@ const ServiceForm = () => {
   
   return (
     <div className="max-w-3xl mx-auto p-4 mb-20"> {/* Added mb-20 for extra bottom margin */}
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
         {isEditMode ? 'Edit Service' : 'Create New Service'}
       </h1>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-300 px-4 py-3 rounded mb-4">
           <p>{error}</p>
         </div>
       )}
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Service Information */}
-        <div className="bg-white rounded-lg shadow p-6 space-y-4 mb-4"> {/* Added mb-4 */}
-          <h2 className="text-lg font-medium text-gray-900">Service Information</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4 mb-4"> {/* Added mb-4 and dark mode */}
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Service Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2"> {/* Added mb-2 */}
             <div>
-              <label htmlFor="service_date" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="service_date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <FaCalendarAlt className="inline mr-1" /> Service Date*
               </label>
               <input
@@ -442,12 +415,14 @@ const ServiceForm = () => {
                 required
                 value={formData.service_date}
                 onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
               />
             </div>
             
             <div>
-              <label htmlFor="church_id" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="church_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Church*
               </label>
               <select
@@ -456,7 +431,9 @@ const ServiceForm = () => {
                 required
                 value={formData.church_id || ''}
                 onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
               >
                 <option value="">Select Church</option>
                 {churches.map(church => (
@@ -469,7 +446,7 @@ const ServiceForm = () => {
           </div>
           
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Service Title*
             </label>
             <input
@@ -479,18 +456,20 @@ const ServiceForm = () => {
               required
               value={formData.title}
               onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+              className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 
+                       bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                       focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
             />
           </div>
         </div>
         
         {/* Team Selection Section - Temporarily hidden
         {formData.church_id && (
-          <div className="bg-white rounded-lg shadow p-6 space-y-4 mb-4">
-            <h2 className="text-lg font-medium text-gray-900">Worship Team</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4 mb-4">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Worship Team</h2>
             
             <div>
-              <label htmlFor="team_id" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="team_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 <FaUsers className="inline mr-1" /> Select Team
               </label>
               <select
@@ -498,7 +477,9 @@ const ServiceForm = () => {
                 name="team_id"
                 value={formData.team_id || ''}
                 onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 
+                         bg-white dark:bg-gray-700 text-gray-900 dark:text-white
+                         focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400"
               >
                 <option value="">No team assigned</option>
                 {teams.map(team => (
@@ -511,7 +492,7 @@ const ServiceForm = () => {
             
             {formData.team_id && (
               <div className="mt-4">
-                <h3 className="text-md font-medium text-gray-700 mb-2">Team Members</h3>
+                <h3 className="text-md font-medium text-gray-700 dark:text-gray-300 mb-2">Team Members</h3>
                 <TeamMembersSelector
                   teamId={formData.team_id}
                   eventId={id}
@@ -526,8 +507,8 @@ const ServiceForm = () => {
         
         {/* Song Selection Section - Only show if church is selected */}
         {formData.church_id && (
-          <div className="bg-white rounded-lg shadow p-6 space-y-4 mb-8"> {/* Added mb-8 */}
-            <h2 className="text-lg font-medium text-gray-900">Service Songs</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4 mb-8"> {/* Added dark mode support */}
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">Service Songs</h2>
             <SongSelector 
               selectedSongs={selectedSongs} 
               onSongsChange={handleSongsChange}
@@ -541,7 +522,10 @@ const ServiceForm = () => {
           <button
             type="submit"
             disabled={saving}
-            className="px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            className="px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white 
+                     bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 
+                     disabled:opacity-50"
           >
             {saving ? 'Saving...' : isEditMode ? 'Update Service' : 'Create Service'}
           </button>

@@ -1,13 +1,14 @@
 // src/components/songs/SongDetail.jsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaMusic, FaPaperclip, FaChevronDown, FaChevronUp, FaExchangeAlt, FaCalendarCheck, FaCheck } from 'react-icons/fa';
+import { FaArrowLeft, FaMusic, FaPaperclip, FaChevronDown, FaChevronUp, FaExchangeAlt, FaCalendarCheck, FaCheck, FaFont } from 'react-icons/fa';
 import { transposeChordLine, getMusicalKeys } from '../../lib/chordTransposer';
 import { fetchSongById } from '../../lib/songAPI';
 import { supabase } from '../../lib/supabase';
 import ChordDisplay from './ChordDisplay';
 import SongTags from './SongTags';
 import SongAttachments from './SongAttachments';
+import LyricsDisplay from './LyricsDisplay'; // Import the new component
 
 const SongDetail = () => {
   const { id } = useParams();
@@ -31,11 +32,22 @@ const SongDetail = () => {
   const [activeTab, setActiveTab] = useState('song'); // 'song' or 'attachments'
   const [showMetadata, setShowMetadata] = useState(false);
   const [showTransposeOptions, setShowTransposeOptions] = useState(false);
+  const [showFontSizeOptions, setShowFontSizeOptions] = useState(false);
   const [updatingSongStatus, setUpdatingSongStatus] = useState(false);
   const [isDone, setIsDone] = useState(isDoneParam === 'true');
   
+  const [fontSize, setFontSize] = useState('text-base'); // Default font size
+
   // List of musical keys for transposition
   const musicalKeys = getMusicalKeys();
+  
+  // Font size options
+  const fontSizeOptions = [
+    { value: 'text-sm', label: 'Small' },
+    { value: 'text-base', label: 'Medium' },
+    { value: 'text-lg', label: 'Large' },
+    { value: 'text-xl', label: 'Extra Large' },
+  ];
 
   // Fetch service details if viewing from a service
   useEffect(() => {
@@ -174,10 +186,10 @@ const SongDetail = () => {
   if (error) {
     return (
       <div className="text-center py-12 px-4">
-        <p className="text-red-500">{error}</p>
+        <p className="text-red-500 dark:text-red-400">{error}</p>
         <button 
           onClick={handleBackToService}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
@@ -188,10 +200,10 @@ const SongDetail = () => {
   if (!song) {
     return (
       <div className="text-center py-12 px-4">
-        <p>Song not found.</p>
+        <p className="dark:text-white">Song not found.</p>
         <button 
           onClick={handleBackToService}
-          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           <FaArrowLeft className="mr-2" /> Back
         </button>
@@ -200,44 +212,44 @@ const SongDetail = () => {
   }
 
   return (
-    <div className="pb-[100px] flex flex-col min-h-screen bg-white px-4 md:px-6">
+    <div className="pb-[100px] flex flex-col min-h-screen bg-white dark:bg-gray-800 px-4 md:px-6">
       {/* Back button row */}
-      <div className="py-2 border-b border-gray-200">
+      <div className="py-2 border-b border-gray-200 dark:border-gray-700">
         <button 
           onClick={handleBackToService}
-          className="text-gray-600 flex items-center"
+          className="text-gray-600 dark:text-gray-400 flex items-center"
           aria-label="Back"
         >
           <FaArrowLeft className="mr-2" /> 
-          <span className="text-sm text-gray-600">Back to Service</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Back to Service</span>
         </button>
       </div>
       
       {/* Title row */}
-      <div className="py-3 border-b border-gray-200">
-        <h1 className="text-xl font-bold">{song.title}</h1>
+      <div className="py-3 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-white">{song.title}</h1>
       </div>
       
       {/* Service context indicator if viewing from a service */}
       {serviceData && (
-        <div className="bg-blue-50 py-2 border-b border-blue-100">
+        <div className="bg-blue-50 dark:bg-blue-900 py-2 border-b border-blue-100 dark:border-blue-800">
           <div className="flex items-center text-sm">
             <FaCalendarCheck className="text-blue-500 mr-2" />
-            <span>Viewing for service: </span>
-            <span className="text-blue-600 ml-1 font-medium">{serviceData.title}</span>
+            <span className="dark:text-blue-200">Viewing for service: </span>
+            <span className="text-blue-600 dark:text-blue-400 ml-1 font-medium">{serviceData.title}</span>
           </div>
         </div>
       )}
       
       {/* Tabs */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="flex">
           <button
             onClick={() => setActiveTab('song')}
             className={`flex-1 py-2 text-center border-b-2 font-medium text-sm ${
               activeTab === 'song'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400'
             }`}
             aria-pressed={activeTab === 'song'}
           >
@@ -248,8 +260,8 @@ const SongDetail = () => {
             onClick={() => setActiveTab('attachments')}
             className={`flex-1 py-2 text-center border-b-2 font-medium text-sm ${
               activeTab === 'attachments'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-gray-500 dark:text-gray-400'
             }`}
             aria-pressed={activeTab === 'attachments'}
           >
@@ -263,36 +275,74 @@ const SongDetail = () => {
         <div className="flex-1">
           {/* Main content - Chord Chart */}
           {song.chords && (
-            <div className="border-b border-gray-200">
+            <div className="border-b border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center py-3">
-                <h2 className="text-base font-medium flex items-center">
+                <h2 className="text-base font-medium flex items-center text-gray-900 dark:text-white">
                   <FaMusic className="mr-2" /> 
                   Chord Chart
                 </h2>
                 
-                <button
-                  onClick={() => setShowTransposeOptions(!showTransposeOptions)}
-                  className="text-blue-600 text-sm"
-                  aria-expanded={showTransposeOptions}
-                >
-                  <FaExchangeAlt className="inline mr-1" /> 
-                  Transpose
-                </button>
+                <div className="flex space-x-2">
+                  {/* Font Size selector */}
+                  <button
+                    onClick={() => setShowFontSizeOptions(!showFontSizeOptions)}
+                    className="text-blue-600 dark:text-blue-400 text-sm"
+                    aria-expanded={showFontSizeOptions}
+                  >
+                    <FaFont className="inline mr-1" /> 
+                    Font Size
+                  </button>
+                  
+                  {/* Transpose button */}
+                  <button
+                    onClick={() => setShowTransposeOptions(!showTransposeOptions)}
+                    className="text-blue-600 dark:text-blue-400 text-sm"
+                    aria-expanded={showTransposeOptions}
+                  >
+                    <FaExchangeAlt className="inline mr-1" /> 
+                    Transpose
+                  </button>
+                </div>
               </div>
+              
+              {/* Font size options (conditionally shown) */}
+              {showFontSizeOptions && (
+                <div className="py-3 bg-gray-50 dark:bg-gray-700 border-y border-gray-200 dark:border-gray-600">
+                  <div className="flex justify-between items-center px-2">
+                    <div>
+                      <label htmlFor="fontSizeSelect" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                        Font Size:
+                      </label>
+                      <select
+                        id="fontSizeSelect"
+                        value={fontSize}
+                        onChange={(e) => setFontSize(e.target.value)}
+                        className="w-32 px-1 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      >
+                        {fontSizeOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Transpose options (conditionally shown) */}
               {showTransposeOptions && (
-                <div className="py-3 bg-gray-50 border-y border-gray-200">
-                  <div className="flex justify-between items-center">
+                <div className="py-3 bg-gray-50 dark:bg-gray-700 border-y border-gray-200 dark:border-gray-600">
+                  <div className="flex justify-between items-center px-2">
                     <div>
-                      <label htmlFor="keySelect" className="block text-xs font-medium text-gray-500 mb-1">
+                      <label htmlFor="keySelect" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                         Transpose to:
                       </label>
                       <select
                         id="keySelect"
                         value={currentKey}
                         onChange={(e) => handleKeyChange(e.target.value)}
-                        className="w-20 px-1 py-1 text-sm border border-gray-300 rounded-md"
+                        className="w-20 px-1 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       >
                         {musicalKeys.map((key) => (
                           <option key={key} value={key}>
@@ -302,12 +352,12 @@ const SongDetail = () => {
                       </select>
                     </div>
                     
-                    <div className="text-xs text-gray-600">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       <div>Original Key: <span className="font-medium">{song.default_key || 'Not set'}</span></div>
                       {currentKey !== song.default_key && (
                         <button
                           onClick={() => handleKeyChange(song.default_key)}
-                          className="text-blue-600 underline"
+                          className="text-blue-600 dark:text-blue-400 underline"
                         >
                           Reset
                         </button>
@@ -318,29 +368,27 @@ const SongDetail = () => {
               )}
               
               {/* Chord Display */}
-              <div className="py-3 overflow-x-auto whitespace-nowrap">
-                <ChordDisplay content={transposedChords} />
+              <div className={`py-3 overflow-x-auto whitespace-nowrap`}>
+                <ChordDisplay content={transposedChords} className={fontSize} />
               </div>
             </div>
           )}
           
-          {/* Lyrics */}
+          {/* Lyrics - Using the new LyricsDisplay component */}
           {song.lyrics && (
-            <div className="border-b border-gray-200">
-              <h2 className="text-base font-medium py-3 border-b border-gray-200">Lyrics</h2>
-              <div className="py-3 break-words">
-                {song.lyrics.split('\n').map((line, index) => (
-                  <div key={index}>{line || <br />}</div>
-                ))}
+            <div className="border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-base font-medium py-3 border-b border-gray-200 dark:border-gray-700 dark:text-white">Lyrics</h2>
+              <div className={`py-3 ${fontSize}`}>
+                <LyricsDisplay lyrics={song.lyrics} />
               </div>
             </div>
           )}
           
           {/* Song Metadata in a collapsible section */}
-          <div className="border-b border-gray-200">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <button
               onClick={() => setShowMetadata(!showMetadata)}
-              className="flex w-full items-center justify-between py-3 text-left"
+              className="flex w-full items-center justify-between py-3 text-left text-gray-900 dark:text-gray-100"
               aria-expanded={showMetadata}
             >
               <span className="font-medium">Song Information</span>
@@ -348,20 +396,20 @@ const SongDetail = () => {
             </button>
             
             {showMetadata && (
-              <div className="py-3 border-t border-gray-200">
+              <div className="py-3 border-t border-gray-200 dark:border-gray-700">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs text-gray-500">Artist</p>
-                    <p className="font-medium">{song.artist || 'Unknown'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Artist</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{song.artist || 'Unknown'}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500">Original Key</p>
-                    <p className="font-medium">{song.default_key || 'Not specified'}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Original Key</p>
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{song.default_key || 'Not specified'}</p>
                   </div>
                   {song.tempo && (
                     <div>
-                      <p className="text-xs text-gray-500">Tempo</p>
-                      <p className="font-medium">{song.tempo} BPM</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Tempo</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">{song.tempo} BPM</p>
                     </div>
                   )}
                 </div>
@@ -369,7 +417,7 @@ const SongDetail = () => {
                 {/* Tags */}
                 {song.tags && song.tags.length > 0 && (
                   <div className="mt-3">
-                    <p className="text-xs text-gray-500">Tags</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Tags</p>
                     <SongTags selectedTags={song.tags} readOnly={true} />
                   </div>
                 )}
@@ -379,9 +427,9 @@ const SongDetail = () => {
           
           {/* Notes */}
           {song.notes && (
-            <div className="border-b border-gray-200">
-              <h2 className="text-base font-medium py-3 border-b border-gray-200">Notes</h2>
-              <div className="py-3 break-words">
+            <div className="border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-base font-medium py-3 border-b border-gray-200 dark:border-gray-700 dark:text-white">Notes</h2>
+              <div className={`py-3 break-words text-gray-900 dark:text-gray-100 ${fontSize}`}>
                 {song.notes.split('\n').map((line, index) => (
                   <div key={index}>{line || <br />}</div>
                 ))}
@@ -401,7 +449,9 @@ const SongDetail = () => {
           <button
             onClick={handleToggleSongDone}
             disabled={updatingSongStatus}
-            className="flex items-center justify-center px-6 py-3 bg-green-500 text-white font-medium rounded-full shadow-md hover:bg-green-600 transition-colors max-w-xs"
+            className={`flex items-center justify-center px-4 py-2 
+                      ${isDone ? 'bg-gray-500 dark:bg-gray-600 hover:bg-gray-600 dark:hover:bg-gray-700' : 'bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-700'} 
+                      text-white font-medium rounded-full shadow-md transition-colors text-sm`}
           >
             <FaCheck className="mr-2" />
             Mark as {isDone ? "Not Done" : "Done"}

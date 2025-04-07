@@ -1,6 +1,6 @@
 // src/components/layout/Header.jsx
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { FaBars, FaBell, FaSignOutAlt } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext'
@@ -12,18 +12,22 @@ const Header = () => {
   const { darkMode } = useTheme()
   const { toggleSidebar } = useSidebar()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const navigate = useNavigate()
   
   const handleSignOut = async () => {
     try {
       await signOut()
-      // Redirect handled by protected route
+      // Manually redirect to login page after sign out
+      navigate('/login')
     } catch (error) {
       console.error('Error signing out:', error)
+      // Even if there's an error, still redirect to login page
+      navigate('/login')
     }
   }
 
   return (
-    <header className="bg-white shadow-sm dark:bg-dark-secondary">
+    <header className="bg-white shadow-sm dark:bg-dark-secondary sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo & Title */}
         <div className="flex items-center">
@@ -57,23 +61,23 @@ const Header = () => {
             </button>
             
             {isMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10">
                 <Link 
                   to="/profile" 
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Your Profile
                 </Link>
                 <Link 
                   to="/settings" 
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Settings
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                   onClick={handleSignOut}
                 >
                   <FaSignOutAlt className="mr-2" />
