@@ -1,5 +1,23 @@
 # Church Connect - Next Steps
 
+## Recent Updates - GitHub Pages Deployment
+
+We've fixed the GitHub Pages deployment by:
+
+1. **Creating a complete GitHub Actions workflow file**:
+   - Set up an automated process to build and deploy the app to GitHub Pages
+   - Configured the correct branch and folder structure for deployment
+   - Added environment variable handling for Supabase credentials
+   - Ensured proper 404 page redirection for client-side routing
+
+2. **Added SPA routing support for GitHub Pages**:
+   - Created a proper 404.html file to handle route redirects 
+   - Added the _redirects file to ensure client-side routing works
+   - Cleaned up the index.html file to properly handle routing
+   - Fixed SPA (Single Page Application) routing issues on GitHub Pages
+
+The application should now be accessible at: https://bajejosh.github.io/church-connect/
+
 ## Current Status Update
 We've made significant progress on the Church Connect app, particularly in the area of service management, song details viewing, and UI improvements:
 
