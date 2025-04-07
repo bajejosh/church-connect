@@ -3,14 +3,15 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { FaBars, FaBell, FaSignOutAlt } from 'react-icons/fa'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
+import { useSidebar } from '../../context/SidebarContext'
+import ThemeToggle from '../common/ThemeToggle'
 
 const Header = () => {
   const { user, signOut } = useAuth()
+  const { darkMode } = useTheme()
+  const { toggleSidebar } = useSidebar()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
   
   const handleSignOut = async () => {
     try {
@@ -22,13 +23,13 @@ const Header = () => {
   }
 
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-white shadow-sm dark:bg-dark-secondary">
       <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo & Title */}
         <div className="flex items-center">
           <button 
-            className="mr-2 md:hidden text-gray-600"
-            onClick={toggleMenu}
+            className="mr-2 md:hidden text-gray-600 dark:text-gray-300"
+            onClick={toggleSidebar}
           >
             <FaBars className="text-xl" />
           </button>
@@ -39,7 +40,9 @@ const Header = () => {
         
         {/* Right side nav items */}
         <div className="flex items-center space-x-4">
-          <button className="text-gray-600 hover:text-blue-600">
+          <ThemeToggle />
+
+          <button className="text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400">
             <FaBell className="text-xl" />
           </button>
           

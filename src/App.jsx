@@ -1,6 +1,8 @@
 // src/App.jsx
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
+import { SidebarProvider } from './context/SidebarContext'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 // Auth Pages
@@ -30,8 +32,10 @@ import ServiceForm from './components/events/ServiceForm'
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <ThemeProvider>
+      <SidebarProvider>
+        <AuthProvider>
+        <Router>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
@@ -79,8 +83,10 @@ function App() {
             </div>
           } />
         </Routes>
-      </Router>
-    </AuthProvider>
+        </Router>
+        </AuthProvider>
+      </SidebarProvider>
+    </ThemeProvider>
   )
 }
 

@@ -4,6 +4,16 @@ import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext()
 
+// Helper function to get the base URL that works in both dev and prod environments
+const getBaseUrl = () => {
+  // For GitHub Pages (production)
+  if (window.location.hostname === 'bajejosh.github.io') {
+    return 'https://bajejosh.github.io/church-connect/#'
+  }
+  // For local development
+  return window.location.origin
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -40,7 +50,10 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: meta }
+        options: { 
+          data: meta,
+          emailRedirectTo: `${getBaseUrl()}/dashboard`
+        }
       })
       
       if (error) throw error
@@ -80,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   const resetPassword = async (email) => {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${getBaseUrl()}/reset-password`,
       })
       
       if (error) throw error

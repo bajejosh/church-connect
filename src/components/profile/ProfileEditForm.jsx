@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaSave } from 'react-icons/fa';
+import TagSelector from '../common/TagSelector';
 
 const ProfileEditForm = ({ 
   profile, 
@@ -15,23 +16,17 @@ const ProfileEditForm = ({
     onProfileChange(prev => ({ ...prev, [name]: value }));
   };
   
-  const handleGiftChange = (e) => {
-    const { value, checked } = e.target;
+  const handleSpiritualGiftsChange = (newGifts) => {
     onProfileChange(prev => ({
       ...prev,
-      spiritualGifts: checked 
-        ? [...prev.spiritualGifts, value]
-        : prev.spiritualGifts.filter(gift => gift !== value)
+      spiritualGifts: newGifts
     }));
   };
   
-  const handleInterestChange = (e) => {
-    const { value, checked } = e.target;
+  const handleMinistryInterestsChange = (newInterests) => {
     onProfileChange(prev => ({
       ...prev,
-      ministryInterests: checked 
-        ? [...prev.ministryInterests, value]
-        : prev.ministryInterests.filter(interest => interest !== value)
+      ministryInterests: newInterests
     }));
   };
   
@@ -69,51 +64,25 @@ const ProfileEditForm = ({
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Spiritual Gifts
-            </label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {spiritualGiftOptions.map(gift => (
-                <div key={gift} className="flex items-center">
-                  <input
-                    id={`gift-${gift}`}
-                    name="spiritualGifts"
-                    type="checkbox"
-                    value={gift}
-                    checked={profile.spiritualGifts.includes(gift)}
-                    onChange={handleGiftChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`gift-${gift}`} className="ml-2 text-sm text-gray-700">
-                    {gift}
-                  </label>
-                </div>
-              ))}
-            </div>
+            <TagSelector
+              name="spiritualGifts"
+              label="Spiritual Gifts"
+              tags={profile.spiritualGifts}
+              onTagsChange={handleSpiritualGiftsChange}
+              options={spiritualGiftOptions}
+              placeholder="Select your spiritual gifts..."
+            />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Ministry Interests
-            </label>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {ministryInterestOptions.map(interest => (
-                <div key={interest} className="flex items-center">
-                  <input
-                    id={`interest-${interest}`}
-                    name="ministryInterests"
-                    type="checkbox"
-                    value={interest}
-                    checked={profile.ministryInterests.includes(interest)}
-                    onChange={handleInterestChange}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor={`interest-${interest}`} className="ml-2 text-sm text-gray-700">
-                    {interest}
-                  </label>
-                </div>
-              ))}
-            </div>
+            <TagSelector
+              name="ministryInterests"
+              label="Ministry Interests"
+              tags={profile.ministryInterests}
+              onTagsChange={handleMinistryInterestsChange}
+              options={ministryInterestOptions}
+              placeholder="Select your ministry interests..."
+            />
           </div>
         </div>
         

@@ -8,7 +8,75 @@
   }
   
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-gray-50 text-gray-900 transition-colors duration-200;
+  }
+  
+  .dark body {
+    @apply bg-gradient-dark text-dark-text;
+  }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-white;
+  }
+  
+  .dark .bg-white {
+    @apply bg-dark-secondary;
+  }
+  
+  .dark .text-gray-900 {
+    @apply text-dark-text;
+  }
+  
+  .dark .text-gray-800 {
+    @apply text-dark-text;
+  }
+  
+  .dark .text-gray-700 {
+    @apply text-dark-text;
+  }
+  
+  .dark .text-gray-600 {
+    @apply text-dark-muted;
+  }
+  
+  .dark .text-gray-500 {
+    @apply text-dark-muted;
+  }
+  
+  .dark .text-gray-400 {
+    @apply text-dark-muted/80;
+  }
+  
+  .dark .border-gray-100 {
+    @apply border-gray-800;
+  }
+  
+  .dark .border-gray-200 {
+    @apply border-gray-800;
+  }
+  
+  .dark .border-gray-300 {
+    @apply border-gray-700;
+  }
+  
+  .dark .shadow {
+    @apply shadow-lg shadow-black/20;
+  }
+  
+  .dark .bg-gray-50 {
+    @apply bg-dark-accent;
+  }
+  
+  .dark .bg-gray-100 {
+    @apply bg-dark-accent;
+  }
+  
+  .dark .hover\:bg-gray-50:hover {
+    @apply hover:bg-dark-accent;
+  }
+  
+  .dark .hover\:bg-gray-100:hover {
+    @apply hover:bg-dark-primary;
   }
 }
 

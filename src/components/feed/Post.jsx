@@ -1,3 +1,4 @@
+// src/components/feed/Post.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -12,13 +13,197 @@ import {
 } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 
+// Component for rendering YouTube and Suno embeds
+const MediaEmbed = ({ url, type, index }) => {
+  if (type === 'youtube') {
+    const videoId = getYouTubeVideoId(url);
+    if (!videoId) return null;
+    
+    return (
+      <div key={`yt-${index}`} className="my-3">
+        <iframe
+          width="100%"
+          height="300"
+          src={`https://www.youtube.com/embed/${videoId}`}
+          title={`YouTube video ${index ? index + 1 : ''}`}
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="rounded-md"
+        ></iframe>
+      </div>
+    );
+  } else if (type === 'suno') {
+    const songId = getSunoSongId(url);
+    if (!songId) return null;
+    
+    return (
+      <div key={`suno-${index}`} className="my-3 p-4 bg-gray-50 rounded-lg border">
+        <div className="flex items-center mb-2">
+          <img src="https://storage.googleapis.com/prod-suno-ipfs/suno-logomark.png" alt="Suno" className="h-6 w-6 mr-2" />
+          <span className="font-medium">Suno Song</span>
+        </div>
+        <div className="bg-blue-50 border border-blue-100 rounded-md p-4 text-center">
+          <p className="text-blue-700 mb-2">Suno song shared</p>
+          <a 
+            href={url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 inline-block"
+          >
+            Listen on Suno
+          </a>
+        </div>
+      </div>
+    );
+  }
+  
+  return null;
+};
+
+// Component for comment content rendering
+const CommentContent = ({ content }) => {
+  // Look for YouTube and Suno URLs in the content
+  const youtubeUrls = findYouTubeUrls(content);
+  const sunoUrls = findSunoUrls(content);
+  
+  // If no media URLs found, just return the text content
+  if (youtubeUrls.length === 0 && sunoUrls.length === 0) {
+    return <p className="text-gray-800">{content}</p>;
+  }
+  
+  // If the content is just a media URL (trimmed), show only the embed
+  if ((youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) ||
+      (sunoUrls.length === 1 && content.trim() === sunoUrls[0])) {
+    
+    // Handle YouTube URL
+    if (youtubeUrls.length === 1) {
+      const videoId = getYouTubeVideoId(youtubeUrls[0]);
+      if (videoId) {
+        return (
+          <div className="mt-2">
+            <iframe
+              width="100%"
+              height="195"
+              src={`https://www.youtube.com/embed/${videoId}`}
+              title="YouTube video"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="rounded-md"
+            ></iframe>
+          </div>
+        );
+      }
+    }
+    
+    // Handle Suno URL
+    if (sunoUrls.length === 1) {
+      const songId = getSunoSongId(sunoUrls[0]);
+      if (songId) {
+        return (
+          <div className="mt-2 p-2 bg-gray-50 rounded-md border">
+            <div className="flex items-center mb-1">
+              <img src="https://storage.googleapis.com/prod-suno-ipfs/suno-logomark.png" alt="Suno" className="h-4 w-4 mr-1" />
+              <span className="text-xs font-medium">Suno Song</span>
+            </div>
+            <div className="bg-blue-50 border border-blue-100 rounded-md p-2 text-center">
+              <a 
+                href={sunoUrls[0]} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 inline-block"
+              >
+                Listen on Suno
+              </a>
+            </div>
+          </div>
+        );
+      }
+    }
+  }
+  
+  // For content with both text and media URLs
+  return (
+    <div>
+      <p className="text-gray-800 mb-2">{content}</p>
+      
+      {/* YouTube embeds */}
+      {youtubeUrls.map((url, index) => (
+        <MediaEmbed key={`yt-${index}`} url={url} type="youtube" index={index} />
+      ))}
+      
+      {/* Suno embeds */}
+      {sunoUrls.map((url, index) => (
+        <MediaEmbed key={`suno-${index}`} url={url} type="suno" index={index} />
+      ))}
+    </div>
+  );
+};
+
+// Component for post content rendering
+const PostContent = ({ content }) => {
+  if (!content) return null;
+  
+  // Look for YouTube and Suno URLs in the content
+  const youtubeUrls = findYouTubeUrls(content);
+  const sunoUrls = findSunoUrls(content);
+  
+  // If no media URLs found, just return the text content
+  if (youtubeUrls.length === 0 && sunoUrls.length === 0) {
+    return <p className="text-gray-800 whitespace-pre-line">{content}</p>;
+  }
+  
+  // If the content is just a media URL (trimmed), show only the embed
+  if ((youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) ||
+      (sunoUrls.length === 1 && content.trim() === sunoUrls[0])) {
+    
+    // Handle YouTube URL
+    if (youtubeUrls.length === 1) {
+      return <MediaEmbed url={youtubeUrls[0]} type="youtube" />;
+    }
+    
+    // Handle Suno URL
+    if (sunoUrls.length === 1) {
+      return <MediaEmbed url={sunoUrls[0]} type="suno" />;
+    }
+  }
+  
+  // For content with both text and media URLs
+  // First show the text, then the embeds for each URL found
+  return (
+    <div>
+      <p className="text-gray-800 whitespace-pre-line mb-3">{content}</p>
+      
+      {/* YouTube embeds */}
+      {youtubeUrls.map((url, index) => (
+        <MediaEmbed key={`yt-${index}`} url={url} type="youtube" index={index} />
+      ))}
+      
+      {/* Suno embeds */}
+      {sunoUrls.map((url, index) => (
+        <MediaEmbed key={`suno-${index}`} url={url} type="suno" index={index} />
+      ))}
+    </div>
+  );
+};
+
+// Post component
 const Post = ({ post, currentUserId }) => {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [userReactions, setUserReactions] = useState({});
+  const [userReactions, setUserReactions] = useState(post.userReactions || {});
+  
+  // Initialize user reactions from post data
+  useEffect(() => {
+    if (post.userReactions) {
+      setUserReactions(post.userReactions);
+    }
+  }, [post.userReactions]);
+  
   const [showMenu, setShowMenu] = useState(false);
   
   // Format the post date
@@ -209,170 +394,6 @@ const Post = ({ post, currentUserId }) => {
     }
   };
   
-  // Function to detect and extract YouTube video IDs from URLs
-  // Improved to handle more URL formats
-  const getYouTubeVideoId = (url) => {
-    if (!url) return null;
-    
-    // Enhanced regular expression to support more YouTube URL formats
-    const regExps = [
-      // Standard YouTube URLs (youtube.com/watch?v=VIDEO_ID)
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&\s]+)/,
-      // Short YouTube URLs (youtu.be/VIDEO_ID)
-      /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^\s]+)/,
-      // Embedded YouTube URLs (youtube.com/embed/VIDEO_ID)
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^\s]+)/,
-      // Youtube.com/v/VIDEO_ID format
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^\s?]+)/,
-      // YouTube shorts (youtube.com/shorts/VIDEO_ID)
-      /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s?]+)/,
-    ];
-    
-    // Try each regex pattern
-    for (const regExp of regExps) {
-      const match = url.match(regExp);
-      if (match && match[1]) {
-        // Return the first 11 characters in case there are additional parameters
-        return match[1].substring(0, 11);
-      }
-    }
-    
-    return null;
-  };
-  
-  // Function to find YouTube URLs within text
-  const findYouTubeUrls = (text) => {
-    if (!text) return [];
-    
-    // Match potential YouTube URLs in the text
-    const urlRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/\S+|youtu\.be\/\S+))/gi;
-    const matches = text.match(urlRegex);
-    
-    return matches || [];
-  };
-  
-  // Function to render post content with YouTube embeds
-  const renderPostContent = (content) => {
-    if (!content) return null;
-    
-    // Look for YouTube URLs in the content
-    const youtubeUrls = findYouTubeUrls(content);
-    
-    // If no YouTube URLs found, just return the text content
-    if (youtubeUrls.length === 0) {
-      return <p className="text-gray-800 whitespace-pre-line">{content}</p>;
-    }
-    
-    // If the content is just a YouTube URL (trimmed), show only the embed
-    if (youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) {
-      const videoId = getYouTubeVideoId(youtubeUrls[0]);
-      if (videoId) {
-        return (
-          <div>
-            <iframe
-              width="100%"
-              height="300"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              title="YouTube video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded-md my-2"
-            ></iframe>
-          </div>
-        );
-      }
-    }
-    
-    // For content with both text and YouTube URLs
-    // First show the text, then the embeds for each YouTube URL found
-    return (
-      <div>
-        <p className="text-gray-800 whitespace-pre-line mb-3">{content}</p>
-        {youtubeUrls.map((url, index) => {
-          const videoId = getYouTubeVideoId(url);
-          if (!videoId) return null;
-          
-          return (
-            <div key={index} className="my-3">
-              <iframe
-                width="100%"
-                height="300"
-                src={`https://www.youtube.com/embed/${videoId}`}
-                title={`YouTube video ${index + 1}`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="rounded-md"
-              ></iframe>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-  
-  // Function to render comment content with YouTube embeds
-  const renderCommentContent = (content) => {
-    if (!content) return null;
-    
-    // Look for YouTube URLs in the content
-    const youtubeUrls = findYouTubeUrls(content);
-    
-    // If no YouTube URLs found, just return the text content
-    if (youtubeUrls.length === 0) {
-      return <p className="text-gray-800">{content}</p>;
-    }
-    
-    // If the content is just a YouTube URL (trimmed), show only the embed
-    if (youtubeUrls.length === 1 && content.trim() === youtubeUrls[0]) {
-      const videoId = getYouTubeVideoId(youtubeUrls[0]);
-      if (videoId) {
-        return (
-          <div className="mt-2">
-            <iframe
-              width="100%"
-              height="195"
-              src={`https://www.youtube.com/embed/${videoId}`}
-              title="YouTube video"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="rounded-md"
-            ></iframe>
-          </div>
-        );
-      }
-    }
-    
-    // For content with both text and YouTube URLs
-    // First show the text, then the embeds for each YouTube URL found
-    return (
-      <div>
-        <p className="text-gray-800 mb-2">{content}</p>
-        {youtubeUrls.map((url, index) => {
-          const videoId = getYouTubeVideoId(url);
-          if (!videoId) return null;
-          
-          return (
-            <div key={index} className="mt-2">
-              <iframe
-                width="100%"
-                height="195"
-                src={`https://www.youtube.com/embed/${videoId}`}
-                title={`YouTube video ${index + 1}`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                className="rounded-md"
-              ></iframe>
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-  
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden mb-4">
       {/* Post header */}
@@ -394,14 +415,14 @@ const Post = ({ post, currentUserId }) => {
             </div>
             <div className="flex items-center">
               <div>
-                <h3 className="font-medium">{post.profile?.full_name || 'User'}</h3>
+                <h3 className="font-medium">{post.is_anonymous ? 'Anonymous' : (post.profile?.full_name || 'User')}</h3>
                 <div className="flex items-center gap-1">
                   <p className="text-xs text-gray-500">
                     {relativeTime}
                     {post.church?.name && ` • ${post.church.name}`}
                   </p>
 
-                  {/* Post type indicator - Improved badge styling */}
+                  {/* Post type indicator */}
                   {(isEvent || isPrayer || isAnnouncement) && (
                     <span className={`inline-flex items-center px-2 py-0.5 ml-1 text-xs font-medium rounded-full ${
                       isEvent ? 'bg-blue-100 text-blue-700' : 
@@ -463,9 +484,9 @@ const Post = ({ post, currentUserId }) => {
         </div>
       </div>
       
-      {/* Post content - Updated to use renderPostContent */}
+      {/* Post content */}
       <div className="p-4 pt-0">
-        {renderPostContent(post.content)}
+        <PostContent content={post.content} />
         
         {/* Media if available */}
         {post.media_urls && post.media_urls.length > 0 && (
@@ -509,24 +530,28 @@ const Post = ({ post, currentUserId }) => {
         </div>
       )}
       
-      {/* Post actions - Removed Share button */}
-      <div className="px-2 py-2 flex border-t border-gray-100">
+      {/* Post actions */}
+      <div className="px-2 py-2 flex items-center border-t border-gray-100">
         <button 
           className={`flex-1 flex items-center justify-center p-2 rounded-md ${
             userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 hover:bg-gray-50'
           }`}
           onClick={() => toggleReaction('like')}
         >
-          {userReactions.like ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
-          Like
+          <span className="inline-flex items-center">
+            {userReactions.like ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+            Like
+          </span>
         </button>
         
         <button 
           className="flex-1 flex items-center justify-center p-2 text-gray-500 hover:bg-gray-50 rounded-md"
           onClick={() => setShowComments(!showComments)}
         >
-          <FaRegComment className="mr-2" />
-          Comment
+          <span className="inline-flex items-center">
+            <FaRegComment className="mr-2" />
+            Comment
+          </span>
         </button>
         
         <button 
@@ -535,8 +560,10 @@ const Post = ({ post, currentUserId }) => {
           }`}
           onClick={() => toggleReaction('pray')}
         >
-          <FaPray className="mr-2" />
-          Pray
+          <span className="inline-flex items-center">
+            <FaPray className="mr-2" />
+            Pray
+          </span>
         </button>
       </div>
       
@@ -596,7 +623,7 @@ const Post = ({ post, currentUserId }) => {
                   <div className="flex-1">
                     <div className="bg-white rounded-lg px-3 py-2 shadow-sm">
                       <div className="font-medium text-sm">{comment.profiles?.full_name || 'User'}</div>
-                      {renderCommentContent(comment.content)}
+                      <CommentContent content={comment.content} />
                     </div>
                     <div className="text-xs text-gray-500 mt-1 ml-2">
                       {formatRelativeTime(comment.created_at)}
@@ -611,5 +638,73 @@ const Post = ({ post, currentUserId }) => {
     </div>
   );
 };
+
+// Utility functions
+// Function to detect and extract YouTube video IDs from URLs
+function getYouTubeVideoId(url) {
+  if (!url) return null;
+  
+  // Enhanced regular expression to support more YouTube URL formats
+  const regExps = [
+    // Standard YouTube URLs (youtube.com/watch?v=VIDEO_ID)
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([^&\s]+)/,
+    // Short YouTube URLs (youtu.be/VIDEO_ID)
+    /(?:https?:\/\/)?(?:www\.)?youtu\.be\/([^\s]+)/,
+    // Embedded YouTube URLs (youtube.com/embed/VIDEO_ID)
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/embed\/([^\s]+)/,
+    // Youtube.com/v/VIDEO_ID format
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/v\/([^\s?]+)/,
+    // YouTube shorts (youtube.com/shorts/VIDEO_ID)
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s?]+)/,
+  ];
+  
+  // Try each regex pattern
+  for (const regExp of regExps) {
+    const match = url.match(regExp);
+    if (match && match[1]) {
+      // Return the first 11 characters in case there are additional parameters
+      return match[1].substring(0, 11);
+    }
+  }
+  
+  return null;
+}
+
+// Function to detect and extract Suno song IDs from URLs
+function getSunoSongId(url) {
+  if (!url) return null;
+  
+  // Extract Suno song ID from URL
+  const sunoRegex = /(?:https?:\/\/)?(?:www\.)?suno\.com\/song\/([a-zA-Z0-9-]+)/;
+  const match = url.match(sunoRegex);
+  
+  if (match && match[1]) {
+    return match[1];
+  }
+  
+  return null;
+}
+
+// Function to find YouTube URLs within text
+function findYouTubeUrls(text) {
+  if (!text) return [];
+  
+  // Match potential YouTube URLs in the text
+  const urlRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/\S+|youtu\.be\/\S+))/gi;
+  const matches = text.match(urlRegex);
+  
+  return matches || [];
+}
+
+// Function to find Suno URLs within text
+function findSunoUrls(text) {
+  if (!text) return [];
+  
+  // Match potential Suno URLs in the text
+  const urlRegex = /(https?:\/\/(?:www\.)?suno\.com\/song\/[a-zA-Z0-9-]+(?:\?[^\s]*)?)/gi;
+  const matches = text.match(urlRegex);
+  
+  return matches || [];
+}
 
 export default Post;

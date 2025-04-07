@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { 
@@ -20,6 +20,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
   const [mediaPreview, setMediaPreview] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const fileInputRef = useRef();
   
   const handleContentChange = (e) => {
@@ -88,6 +89,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
         content: content.trim(),
         media_urls: [],
         post_type: postType,
+        is_anonymous: postType === 'prayer' && isAnonymous
       };
       
       const { data: post, error } = await supabase
@@ -108,6 +110,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
       setMedia([]);
       setMediaPreview([]);
       setPostType('regular');
+      setIsAnonymous(false);
       setExpanded(false);
       
       if (onPostCreated) {
@@ -166,7 +169,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
             <div className="flex-1">
               <textarea
                 placeholder={`What's on your mind, ${full_name?.split(' ')[0] || 'there'}?`}
-                className="w-full border-0 focus:ring-0 text-lg text-gray-700 placeholder-gray-400 bg-transparent resize-none"
+                className="w-full border rounded-lg p-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-lg text-gray-700 placeholder-gray-400 bg-white resize-none"
                 rows={expanded ? 4 : 2}
                 value={content}
                 onChange={handleContentChange}
@@ -246,6 +249,21 @@ const PostComposer = ({ onPostCreated, churchId }) => {
             </div>
             
             {/* Media upload buttons */}
+            {/* Anonymous option for prayer requests */}
+            {postType === 'prayer' && (
+              <div className="px-4 py-2 border-t border-gray-100">
+                <label className="flex items-center space-x-2 text-sm text-gray-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span>Post anonymously</span>
+                </label>
+              </div>
+            )}
+            
             <div className="px-4 py-2 flex items-center justify-between border-t border-gray-100">
               <div className="flex items-center space-x-2">
                 <button
@@ -286,6 +304,7 @@ const PostComposer = ({ onPostCreated, churchId }) => {
                     setMedia([]);
                     setMediaPreview([]);
                     setPostType('regular');
+                    setIsAnonymous(false);
                   }}
                 >
                   Cancel

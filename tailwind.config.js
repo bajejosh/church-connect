@@ -4,6 +4,7 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -20,9 +21,19 @@ export default {
           800: '#075985',
           900: '#0c4a6e',
         },
+        dark: {
+          primary: '#121212',
+          secondary: '#1e1e1e',
+          accent: '#272727',
+          text: '#e2e2e2',
+          muted: '#a0a0a0'
+        }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      backgroundImage: {
+        'gradient-dark': 'linear-gradient(to bottom right, rgb(36, 36, 44), rgb(18, 18, 24))'
       },
     },
   },

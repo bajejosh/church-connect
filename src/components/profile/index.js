@@ -1,5 +1,13 @@
-export { default as ProfileHeader } from './ProfileHeader';
-export { default as ProfileInfo } from './ProfileInfo';
-export { default as ProfileEditForm } from './ProfileEditForm';
-export { default as PostsList } from './PostsList';
-export { default as ConnectionsList } from './ConnectionsList';
+import ProfileHeader from './ProfileHeader';
+import ProfileInfo from './ProfileInfo';
+import ProfileEditForm from './ProfileEditForm';
+import ConnectionsList from './connections/ConnectionsList';
+import PostsList from './PostsList';
+
+export {
+  ProfileHeader,
+  ProfileInfo,
+  ProfileEditForm,
+  PostsList,
+  ConnectionsList
+};

@@ -41,10 +41,10 @@ const Sidebar = ({ className }) => {
             {user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || 'U'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
               {user?.user_metadata?.full_name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
               {user?.email || 'No email'}
             </p>
           </div>
@@ -60,8 +60,8 @@ const Sidebar = ({ className }) => {
             className={({ isActive }) =>
               `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 isActive
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
               }`
             }
           >
@@ -80,8 +80,8 @@ const Sidebar = ({ className }) => {
             className={({ isActive }) =>
               `flex items-center px-4 py-2 text-sm font-medium rounded-md ${
                 isActive
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
               }`
             }
           >

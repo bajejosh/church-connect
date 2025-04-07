@@ -10,6 +10,7 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 // Extend dayjs with plugins
 dayjs.extend(relativeTime)
 import { Feed } from '../components/feed'
+import FixDatabase from '../utils/FixDatabase'
 
 const Dashboard = () => {
   const { user } = useAuth()
@@ -146,7 +147,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 pt-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Feed</h1>
         {churchInfo && (
           <p className="text-gray-600">{churchInfo.name}</p>
         )}
@@ -204,6 +205,9 @@ const Dashboard = () => {
               <span className="text-sm font-medium text-gray-900">Teams</span>
             </Link>
           </div>
+          
+          {/* Post composer */}
+          <FixDatabase />
           
           {/* Feed */}
           <Feed currentUserId={user.id} churchId={churchId} />
