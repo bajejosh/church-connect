@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "homepage": "https://joshmacaraig.com/church-connect/",
+  "homepage": "https://bajejosh.github.io/church-connect/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
