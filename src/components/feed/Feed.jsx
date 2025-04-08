@@ -21,6 +21,22 @@ const Feed = ({ currentUserId, churchId }) => {
     fetchPosts();
   }, [page, activeFilter, refreshTrigger, churchId]);
   
+  // Helper function to sort posts (pinned at top, then by date)
+  const sortPosts = (postsArray) => {
+    // Modify the array in place for efficiency
+    postsArray.sort((a, b) => {
+      // First sort by pinned status (pinned posts come first)
+      const aIsPinned = a.is_pinned ?? false;
+      const bIsPinned = b.is_pinned ?? false;
+      
+      if (aIsPinned && !bIsPinned) return -1;
+      if (!aIsPinned && bIsPinned) return 1;
+      // Then sort by creation date (newest first)
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+    return postsArray;
+  };
+  
   // Get current user profile for adding to new posts
   useEffect(() => {
     if (currentUserId && user?.user_metadata) {
@@ -56,11 +72,14 @@ const Feed = ({ currentUserId, churchId }) => {
   
   // Handle post update
   const handlePostUpdated = (updatedPost) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
+    setPosts(prevPosts => {
+      // Replace the updated post
+      const newPosts = prevPosts.map(post => 
         post.id === updatedPost.id ? updatedPost : post
-      )
-    );
+      );
+      // Re-sort to ensure pinned posts stay at top
+      return sortPosts(newPosts);
+    });
   };
   
   // Handle post deletion
@@ -72,10 +91,11 @@ const Feed = ({ currentUserId, churchId }) => {
     try {
       setLoading(true);
       
-      // Use the posts_with_authors view we created instead of doing a join
+      // Execute query with explicit ordering by pinned status first
       let query = supabase
         .from('posts_with_authors')
         .select('*')
+        .order('is_pinned', { ascending: false })
         .order('created_at', { ascending: false })
         .range(page * pageSize, (page + 1) * pageSize - 1);
       
@@ -113,10 +133,11 @@ const Feed = ({ currentUserId, churchId }) => {
       if (viewError) {
         console.error('Error with posts_with_authors view:', viewError);
         
-        // Fallback to regular posts table
+        // Fallback to regular posts table with explicit ordering
         let fallbackQuery = supabase
           .from('posts')
           .select('*')
+          .order('is_pinned', { ascending: false })
           .order('created_at', { ascending: false })
           .range(page * pageSize, (page + 1) * pageSize - 1);
           
@@ -208,6 +229,9 @@ const Feed = ({ currentUserId, churchId }) => {
       }));
       
       updatePostsState(postsWithExtra);
+      
+      // Sort posts - always put pinned posts at the top
+      sortPosts(posts);
       
     } catch (err) {
       console.error('Error fetching posts:', err);
@@ -301,11 +325,17 @@ const Feed = ({ currentUserId, churchId }) => {
   
   // Helper function to update posts state
   const updatePostsState = (postsWithExtra) => {
-    // On first page, replace posts; otherwise append
+    // Sort posts to ensure pinned posts are at the top
+    const sortedPosts = sortPosts([...postsWithExtra]);
+    
+    // On first page, replace posts; otherwise append with sorting
     if (page === 0) {
-      setPosts(postsWithExtra);
+      setPosts(sortedPosts);
     } else {
-      setPosts(prev => [...prev, ...postsWithExtra]);
+      setPosts(prev => {
+        const allPosts = [...prev, ...sortedPosts];
+        return sortPosts(allPosts);
+      });
     }
   };
   
@@ -325,7 +355,11 @@ const Feed = ({ currentUserId, churchId }) => {
         userReactions: {}
       };
       
-      setPosts(prevPosts => [newPost, ...prevPosts]);
+      setPosts(prevPosts => {
+        // Add new post and resort based on pinned status
+        const updatedPosts = [newPost, ...prevPosts];
+        return sortPosts(updatedPosts);
+      });
     } else {
       // Reset to first page and refresh if no user ID is available
       setPage(0);

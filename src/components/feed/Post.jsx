@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ImageModal from '../common/ImageModal';
 import { 
   FaRegHeart, 
   FaHeart, 
@@ -7,7 +8,8 @@ import {
   FaUser,
   FaEllipsisH,
   FaEdit,
-  FaTrash
+  FaTrash,
+  FaThumbtack
 } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 import PostHeader from './PostHeader';
@@ -27,6 +29,9 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isPinned, setIsPinned] = useState(post.is_pinned || false);
+  const [pinningPost, setPinningPost] = useState(false);
   
   // Initialize user reactions from post data
   useEffect(() => {
@@ -37,17 +42,17 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
 
   // Fetch author info if not already provided
   useEffect(() => {
-    const fetchAuthorInfo = async () => {
-      if (post.is_anonymous) return;
-      
-      if (post.profile?.full_name && post.profile?.full_name !== 'User') {
-        setAuthorInfo(post.profile);
-        return;
-      }
-      
-      if (!post.user_id) return;
-      
-      try {
+    if (post.is_anonymous) return;
+    
+    if (post.profile?.full_name && post.profile?.full_name !== 'User') {
+      setAuthorInfo(post.profile);
+      return;
+    }
+    
+    if (!post.user_id) return;
+    
+    try {
+      const fetchAuthorInfo = async () => {
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name, avatar_url')
@@ -59,12 +64,12 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
         if (data) {
           setAuthorInfo(data);
         }
-      } catch (err) {
-        console.error('Error fetching author info:', err);
-      }
-    };
-    
-    fetchAuthorInfo();
+      };
+      
+      fetchAuthorInfo();
+    } catch (err) {
+      console.error('Error fetching author info:', err);
+    }
   }, [post.user_id, post.is_anonymous, post.profile]);
   
   // Format the post date
@@ -136,6 +141,66 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
       
     } catch (error) {
       console.error('Error toggling reaction:', error);
+    }
+  };
+
+  // Toggle pin status
+  const togglePinStatus = async () => {
+    if (!currentUserId || currentUserId !== post.user_id) return;
+    
+    try {
+      setPinningPost(true);
+      
+      try {
+        // Try calling the function to toggle post pin
+        const { data, error } = await supabase.rpc('toggle_post_pin', {
+          post_id_param: post.id,
+          user_id_param: currentUserId
+        });
+        
+        if (error) throw error;
+        
+        // Update the local state
+        setIsPinned(data);
+        
+        // Update the post object
+        post.is_pinned = data;
+        
+        // Call the callback if provided
+        if (onPostUpdated) {
+          onPostUpdated({...post, is_pinned: data});
+        }
+      } catch (functionError) {
+        console.warn('Function toggle_post_pin not found. Falling back to direct update.', functionError);
+        
+        // Fallback: directly update the post when the function isn't available
+        const newPinnedState = !isPinned;
+        
+        // Update in database
+        const { error: updateError } = await supabase
+          .from('posts')
+          .update({ is_pinned: newPinnedState })
+          .eq('id', post.id)
+          .eq('user_id', currentUserId); // Safety check
+        
+        if (updateError) throw updateError;
+        
+        // Update the local state
+        setIsPinned(newPinnedState);
+        
+        // Update the post object
+        post.is_pinned = newPinnedState;
+        
+        // Call the callback if provided
+        if (onPostUpdated) {
+          onPostUpdated({...post, is_pinned: newPinnedState});
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling pin status:', error);
+    } finally {
+      setPinningPost(false);
+      setShowMenu(false);
     }
   };
   
@@ -387,6 +452,15 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
   
   return (
     <>
+      {/* Image Modal */}
+      {selectedImage && (
+        <ImageModal
+          imageUrl={selectedImage}
+          onClose={() => setSelectedImage(null)}
+          allImages={post.media_urls?.filter(url => !url.match(/\.(mp4|webm|ogg)$/i)) || []}
+        />
+      )}
+      
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <DeleteConfirmation
@@ -408,18 +482,28 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
           onCancel={handleCancelEdit} 
         />
       ) : (
-        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-4">
+        <div className={`bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-4 ${isPinned ? 'border-l-4 border-blue-500' : ''}`}>
           {/* Post header */}
           <div className="p-4 flex items-center justify-between">
-            <PostHeader 
-              post={post}
-              authorInfo={authorInfo}
-              relativeTime={relativeTime}
-              formattedDate={formattedDate}
-              isEvent={isEvent}
-              isPrayer={isPrayer} 
-              isAnnouncement={isAnnouncement}
-            />
+            <div className="flex items-center">
+              <PostHeader 
+                post={post}
+                authorInfo={authorInfo}
+                relativeTime={relativeTime}
+                formattedDate={formattedDate}
+                isEvent={isEvent}
+                isPrayer={isPrayer} 
+                isAnnouncement={isAnnouncement}
+              />
+              
+              {/* Pin indicator */}
+              {isPinned && (
+                <div className="ml-2 flex items-center bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full" title="Pinned post">
+                  <FaThumbtack className="text-blue-500 mr-1" />
+                  <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">Pinned</span>
+                </div>
+              )}
+            </div>
             
             {/* Post menu */}
             <div className="relative ml-auto">
@@ -434,7 +518,7 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
                   <div className="py-1">
                     <button 
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
                       onClick={() => setShowMenu(false)}
                     >
                       Save post
@@ -446,6 +530,13 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
                           onClick={handleEditPost}
                         >
                           <FaEdit className="mr-2" /> Edit post
+                        </button>
+                        <button 
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                          onClick={togglePinStatus}
+                          disabled={pinningPost}
+                        >
+                          <FaThumbtack className="mr-2" /> {isPinned ? 'Unpin post' : 'Pin to top'}
                         </button>
                         <button 
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
@@ -484,7 +575,8 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
                       key={i} 
                       src={url} 
                       alt={`Post media ${i+1}`}
-                      className="w-full h-auto rounded-md object-cover"
+                      className="w-full h-auto rounded-md object-cover cursor-pointer"
+                      onClick={() => setSelectedImage(url)}
                     />
                   );
                 })}
@@ -495,14 +587,14 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
           {/* Post stats */}
           {(likesCount > 0 || prayerCount > 0 || post.commentsCount > 0) && (
             <div className="px-4 py-2 flex justify-between text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
-              <div>
+              <div className="flex items-center">
                 {likesCount > 0 && (
-                  <span className="flex items-center inline-block mr-3">
+                  <span className="inline-flex items-center mr-3">
                     <FaHeart className="text-red-500 mr-1" /> {likesCount}
                   </span>
                 )}
                 {prayerCount > 0 && (
-                  <span className="flex items-center inline-block mr-3">
+                  <span className="inline-flex items-center">
                     <FaPray className="text-purple-500 mr-1" /> {prayerCount}
                   </span>
                 )}
@@ -519,10 +611,10 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
             </div>
           )}
           
-          {/* Post actions - using flex justify-between instead for proper horizontal alignment */}
-          <div className="px-2 py-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
+          {/* Post actions - using a proper grid for perfect alignment */}
+          <div className="px-2 py-2 grid grid-cols-3 gap-2 border-t border-gray-100 dark:border-gray-700">
             <button 
-              className={`flex-1 flex items-center justify-center p-2 rounded-md ${
+              className={`flex items-center justify-center p-2 rounded-md ${
                 userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
               onClick={() => toggleReaction('like')}
@@ -534,7 +626,7 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
             </button>
             
             <button 
-              className="flex-1 flex items-center justify-center p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+              className="flex items-center justify-center p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
               onClick={() => setShowComments(!showComments)}
             >
               <span className="inline-flex items-center">
@@ -544,7 +636,7 @@ const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
             </button>
             
             <button 
-              className={`flex-1 flex items-center justify-center p-2 rounded-md ${
+              className={`flex items-center justify-center p-2 rounded-md ${
                 userReactions.pray ? 'text-purple-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
               onClick={() => toggleReaction('pray')}

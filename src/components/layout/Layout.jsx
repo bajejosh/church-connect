@@ -29,10 +29,12 @@ const Layout = ({ children }) => {
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gradient-dark">
       <Header />
       
-      <div className="flex flex-1">
+      <div className="flex flex-1 relative">
         {/* Sidebar for tablet/desktop */}
         {!isMobile && (
-          <Sidebar className="hidden md:block w-64 bg-white shadow-md dark:bg-dark-secondary" />
+          <div className="w-64 fixed top-[3.25rem] bottom-0 left-0 z-20">
+            <Sidebar className="h-full" />
+          </div>
         )}
         
         {/* Mobile sidebar */}
@@ -46,8 +48,10 @@ const Layout = ({ children }) => {
             ></div>
             
             {/* Sidebar */}
-            <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white dark:bg-dark-secondary transform transition ease-in-out duration-300">
-              <Sidebar className="flex-1 h-0 overflow-y-auto" />
+            <div className="relative flex-1 flex flex-col max-w-xs w-full transform transition ease-in-out duration-300">
+              <div className="absolute top-0 bottom-0 left-0 w-full">
+                <Sidebar className="h-full" />
+              </div>
             </div>
           </div>
         )}

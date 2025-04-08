@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { FaUser, FaEdit, FaCamera, FaUserPlus, FaUserMinus, FaCrop, FaChurch } from 'react-icons/fa';
+import ImageModal from '../components/common/ImageModal';
 import ImagePositionEditor from '../components/profile/ImagePositionEditor';
 import Post from '../components/feed/Post';
 
@@ -26,6 +27,8 @@ const Profile = () => {
   const [editMode, setEditMode] = useState(false);
   const [showAvatarPositionEditor, setShowAvatarPositionEditor] = useState(false);
   const [showCoverPositionEditor, setShowCoverPositionEditor] = useState(false);
+  const [viewProfileImage, setViewProfileImage] = useState(false);
+  const [viewCoverImage, setViewCoverImage] = useState(false);
   
   const [profileData, setProfileData] = useState({
     fullName: '',
@@ -546,18 +549,35 @@ const Profile = () => {
   
   return (
     <div className="space-y-6 pb-16 md:pb-0 dark:bg-gray-900 dark:text-white">
+      {/* Image Modal for Profile Image */}
+      {viewProfileImage && profileData.avatarUrl && (
+        <ImageModal
+          imageUrl={profileData.avatarUrl}
+          onClose={() => setViewProfileImage(false)}
+        />
+      )}
+      
+      {/* Image Modal for Cover Image */}
+      {viewCoverImage && profileData.coverUrl && (
+        <ImageModal
+          imageUrl={profileData.coverUrl}
+          onClose={() => setViewCoverImage(false)}
+        />
+      )}
+
       {/* Cover Photo */}
       <div className="relative h-48 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden">
         {profileData.coverUrl ? (
           <img 
             src={profileData.coverUrl} 
             alt="Cover" 
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover cursor-pointer"
             style={{ 
               objectPosition: profileData.coverPosition ? 
                 `${profileData.coverPosition.x}% ${profileData.coverPosition.y}%` : 
                 '50% 50%' 
             }}
+            onClick={() => setViewCoverImage(true)}
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
@@ -606,12 +626,13 @@ const Profile = () => {
               <img 
                 src={profileData.avatarUrl} 
                 alt={profileData.fullName} 
-                className="w-full h-full rounded-full object-cover"
+                className="w-full h-full rounded-full object-cover cursor-pointer"
                 style={{ 
                   objectPosition: profileData.avatarPosition ? 
                     `${profileData.avatarPosition.x}% ${profileData.avatarPosition.y}%` : 
                     '50% 50%' 
                 }}
+                onClick={() => setViewProfileImage(true)}
               />
             ) : (
               <div className="w-full h-full rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">

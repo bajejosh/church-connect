@@ -64,6 +64,7 @@ function App() {
             <Route path="/services/edit/:id" element={<ServiceForm />} />
             
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/prayer-requests" element={<PrayerRequests />} />
             <Route path="/churches" element={<Churches />} />
           </Route>

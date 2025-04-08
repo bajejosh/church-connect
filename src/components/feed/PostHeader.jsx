@@ -1,6 +1,6 @@
 // src/components/feed/PostHeader.jsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaCalendarAlt, FaPray, FaBullhorn } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 
@@ -16,6 +16,7 @@ const PostHeader = ({
   isPrayer,
   isAnnouncement
 }) => {
+  const navigate = useNavigate();
   const [fetchedAuthor, setFetchedAuthor] = useState(null);
   
   // Fetch author if not provided and not anonymous
@@ -143,7 +144,7 @@ const PostHeader = ({
         </div>
       ) : (
         // Regular post with link to profile
-        <Link to={`/profile/${post.user_id}`} className="flex items-center">
+        <div className="flex items-center cursor-pointer" onClick={() => navigate(`/profile/${post.user_id}`)}>
           <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
             {getAvatarUrl() ? (
               <img 
@@ -172,7 +173,7 @@ const PostHeader = ({
               {formattedDate}
             </p>
           </div>
-        </Link>
+        </div>
       )}
     </div>
   );
