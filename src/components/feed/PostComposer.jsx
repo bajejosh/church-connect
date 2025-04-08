@@ -82,12 +82,40 @@ const PostComposer = ({ onPostCreated, churchId }) => {
     try {
       setUploading(true);
       
+      // Upload media files if any
+      const mediaUrls = [];
+      
+      if (media.length > 0) {
+        for (const file of media) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+          const filePath = `posts/${user.id}/${fileName}`;
+          
+          // Upload to storage
+          const { error: uploadError } = await supabase.storage
+            .from('media') // Make sure this bucket exists
+            .upload(filePath, file);
+          
+          if (uploadError) {
+            console.error('Media upload error:', uploadError);
+            throw uploadError;
+          }
+          
+          // Get public URL
+          const { data } = supabase.storage
+            .from('media')
+            .getPublicUrl(filePath);
+          
+          mediaUrls.push(data.publicUrl);
+        }
+      }
+      
       // Create a post with user metadata included
       const postData = {
         user_id: user.id,
         church_id: churchId,
         content: content.trim(),
-        media_urls: [],
+        media_urls: mediaUrls,
         post_type: postType,
         is_anonymous: postType === 'prayer' && isAnonymous
       };

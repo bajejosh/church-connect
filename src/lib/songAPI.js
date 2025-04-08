@@ -1,5 +1,6 @@
 // src/lib/songAPI.js
 import { supabase } from './supabase';
+import { updateRecordById } from '../utils/supabaseUtils';
 
 /**
  * API functions for song management
@@ -147,47 +148,64 @@ export const createSong = async (songData) => {
  * @returns {Promise<Object>} Updated song
  */
 export const updateSong = async (id, songData) => {
-  // Extract tags if they exist
-  const tags = songData.tags || [];
-  const songWithoutTags = { ...songData };
-  delete songWithoutTags.tags;
-  
-  // Update song
-  const { data, error } = await supabase
-    .from('songs')
-    .update(songWithoutTags)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) throw error;
-  
-  // Update tags if they were provided
-  if (tags.length > 0) {
-    try {
-      // Check if the song_tag_assignments table exists
-      const { error: checkError } = await supabase
-        .from('song_tag_assignments')
-        .select('id')
-        .limit(1);
-        
-      if (!checkError) {
-        // First remove existing tag assignments
-        await supabase
-          .from('song_tag_assignments')
-          .delete()
-          .eq('song_id', id);
-        
-        // Then add new ones
-        await assignTagsToSong(id, tags);
-      }
-    } catch (tagError) {
-      // If there's an error with tags, log it but don't fail the song update
-      console.warn('Could not update song tags:', tagError);
+  try {
+    // Extract tags if they exist
+    const tags = songData.tags || [];
+    const songWithoutTags = { ...songData };
+    delete songWithoutTags.tags;
+    
+    // REVERT BACK TO USING THE SUPABASE CLIENT DIRECTLY
+    console.log('Updating song with data:', songWithoutTags);
+    
+    // Update song
+    const { data, error } = await supabase
+      .from('songs')
+      .update(songWithoutTags)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error from supabase client update:', error);
+      throw error;
     }
+    
+    if (!data) {
+      throw new Error('No data returned from update operation');
+    }
+    
+    console.log('Song updated successfully:', data);
+    
+    // Update tags if they were provided
+    if (tags.length > 0) {
+      try {
+        // Check if the song_tag_assignments table exists
+        const { error: checkError } = await supabase
+          .from('song_tag_assignments')
+          .select('id')
+          .limit(1);
+          
+        if (!checkError) {
+          // First remove existing tag assignments
+          await supabase
+            .from('song_tag_assignments')
+            .delete()
+            .eq('song_id', id);
+          
+          // Then add new ones
+          await assignTagsToSong(id, tags);
+        }
+      } catch (tagError) {
+        // If there's an error with tags, log it but don't fail the song update
+        console.warn('Could not update song tags:', tagError);
+      }
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error updating song:', error);
+    throw error;
   }
-  
-  return data;
 };
 
 /**

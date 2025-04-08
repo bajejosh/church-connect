@@ -1,6 +1,6 @@
 // src/pages/PrayerRequests.jsx
 import { useState, useEffect } from 'react'
-import { FaPlus, FaPray, FaHeart, FaTags, FaChurch, FaGlobe } from 'react-icons/fa'
+import { FaPlus, FaPray, FaTags, FaChurch, FaGlobe } from 'react-icons/fa'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import dayjs from 'dayjs'
@@ -210,25 +210,35 @@ const CategoryFilterDropdown = ({ categories, activeCategories, onChange }) => {
   );
 };
 
-const PrayerRequestCard = ({ prayer, onPray, currentUserId, categoryOptions }) => {
+const PrayerRequestCard = ({ prayer, onPray, currentUserId }) => {
   const isPrayerAuthor = prayer.user_id === currentUserId;
   
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
       <div className="p-4">
         <div className="flex justify-between items-start">
-          <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{prayer.title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {prayer.is_anonymous ? 'Anonymous' : (prayer.author_name || 'User')} • {dayjs(prayer.created_at).fromNow()}
-            </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {prayer.church_name ? `From: ${prayer.church_name}` : (prayer.is_global ? 'Global' : '')}
-            </p>
+          <div className="w-full">
+            {/* Prayer title */}
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{prayer.title}</h3>
+            
+            {/* Author and time */}
+            <div className="flex justify-between items-center mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {prayer.is_anonymous ? 'Anonymous' : (prayer.author_name || 'User')} • {dayjs(prayer.created_at).fromNow()}
+              </p>
+            </div>
+            
+            {/* Show church name only for non-anonymous prayers or global prayers */}
+            {((!prayer.is_anonymous && prayer.church_name) || prayer.is_global) && (
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {prayer.is_global ? 'Global Prayer Request' : `From: ${prayer.church_name}`}
+              </p>
+            )}
           </div>
         </div>
         
-        <div className="mt-2">
+        {/* Prayer description */}
+        <div className="mt-3">
           <p className="text-gray-700 dark:text-gray-300">
             {prayer.description}
           </p>
@@ -248,6 +258,7 @@ const PrayerRequestCard = ({ prayer, onPray, currentUserId, categoryOptions }) =
           </div>
         )}
         
+        {/* Prayer actions */}
         <div className="mt-4 flex justify-between items-center">
           <button
             onClick={() => onPray(prayer.id)}
@@ -258,8 +269,8 @@ const PrayerRequestCard = ({ prayer, onPray, currentUserId, categoryOptions }) =
           </button>
           
           <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm">
-            <FaHeart className="text-red-500 mr-1" />
-            <span>{prayer.prayer_count || 0} prayers</span>
+            <FaPray className="text-blue-500 dark:text-blue-400 mr-1" />
+            <span>{prayer.prayer_count || 0} {prayer.prayer_count === 1 ? 'prayer' : 'prayers'}</span>
           </div>
         </div>
       </div>
@@ -286,7 +297,7 @@ const PrayerRequests = () => {
   
   useEffect(() => {
     fetchPrayers();
-  }, [scope]);
+  }, [scope, filter]);
   
   const fetchPrayers = async () => {
     try {
@@ -322,8 +333,6 @@ const PrayerRequests = () => {
       
       if (error) throw error;
       
-      console.log('Prayer requests data:', data);
-      
       // Process data to get church name
       const processedData = data.map(prayer => ({
         ...prayer,
@@ -344,8 +353,6 @@ const PrayerRequests = () => {
             .map(prayer => prayer.user_id)
       )];
       
-      console.log('User IDs to fetch profiles for:', userIds);
-      
       // Initialize with existing profiles
       let profileMap = {...userProfiles};
       
@@ -356,15 +363,11 @@ const PrayerRequests = () => {
           .select('id, full_name, avatar_url')
           .in('id', userIds);
         
-        console.log('Fetched profiles:', profiles);
-        console.log('Profiles error:', profilesError);
-        
         if (!profilesError && profiles) {
           // Create a lookup map of user profiles
           profiles.forEach(profile => {
             profileMap[profile.id] = profile;
           });
-          console.log('Profile map created:', profileMap);
           // Update state with the new map
           setUserProfiles(profileMap);
         }
@@ -376,13 +379,6 @@ const PrayerRequests = () => {
           ? profileMap[prayer.user_id].full_name 
           : null;
         
-        console.log(`Prayer ${prayer.id} author info:`, {
-          is_anonymous: prayer.is_anonymous,
-          user_id: prayer.user_id,
-          profile_found: profileMap[prayer.user_id] ? true : false,
-          author_name: authorInfo
-        });
-        
         return {
           ...prayer,
           author_name: authorInfo
@@ -390,7 +386,7 @@ const PrayerRequests = () => {
       });
       
       setPrayerRequests(prayersWithAuthor || []);
-      setAvailableCategories([...allCategories]);
+      setAvailableCategories([...new Set([...defaultCategoryOptions, ...allCategories])]);
     } catch (error) {
       console.error('Error fetching prayer requests:', error);
     } finally {
@@ -405,8 +401,6 @@ const PrayerRequests = () => {
         .select('church_id, full_name')
         .eq('id', user?.id)
         .single();
-      
-      console.log('Profile data for new prayer request:', profileData);
       
       // Create new prayer request
       const { data, error } = await supabase
@@ -426,8 +420,6 @@ const PrayerRequests = () => {
         .single();
       
       if (error) throw error;
-      
-      console.log('New prayer request created:', data);
       
       // Also create a post in the Feed for this prayer request
       if (!prayerData.isPrivate) {
@@ -457,8 +449,6 @@ const PrayerRequests = () => {
           author_name: profileData.full_name
         };
         
-        console.log('Adding new prayer with author to state:', newPrayerWithAuthor);
-        
         // Only update state if the current scope matches the new prayer
         if ((scope === 'church' && !prayerData.isGlobal) || 
             (scope === 'global' && prayerData.isGlobal)) {
@@ -467,7 +457,6 @@ const PrayerRequests = () => {
         }
       } else {
         // Otherwise refetch all prayers to ensure proper data synchronization
-        console.log('Refetching all prayers after creation');
         fetchPrayers();
       }
     } catch (error) {
@@ -532,7 +521,7 @@ const PrayerRequests = () => {
   
   return (
     <div className="space-y-4 pb-16 md:pb-0">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Prayer Requests</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
@@ -544,13 +533,13 @@ const PrayerRequests = () => {
       </div>
       
       {/* Scope tabs (Church vs Global) */}
-      <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 mb-2">
-        <nav className="-mb-px flex space-x-4">
+      <div className="flex justify-between items-center mb-2">
+        <nav className="flex w-full border-b border-gray-200 dark:border-gray-700">
           <button
             onClick={() => setScope('church')}
-            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center ${
+            className={`flex-1 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center justify-center ${
               scope === 'church'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
@@ -558,9 +547,9 @@ const PrayerRequests = () => {
           </button>
           <button
             onClick={() => setScope('global')}
-            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center ${
+            className={`flex-1 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm flex items-center justify-center ${
               scope === 'global'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
@@ -570,13 +559,13 @@ const PrayerRequests = () => {
       </div>
       
       {/* Filter tabs */}
-      <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700">
-        <nav className="-mb-px flex space-x-4">
+      <div className="flex justify-between items-center mb-4">
+        <nav className="flex w-full">
           <button
             onClick={() => setFilter('all')}
-            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
               filter === 'all'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
@@ -584,9 +573,9 @@ const PrayerRequests = () => {
           </button>
           <button
             onClick={() => setFilter('mine')}
-            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
               filter === 'mine'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
@@ -594,25 +583,27 @@ const PrayerRequests = () => {
           </button>
           <button
             onClick={() => setFilter('others')}
-            className={`whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`flex-1 whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm ${
               filter === 'others'
-                ? 'border-blue-500 text-blue-600'
+                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                 : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
             }`}
           >
             Others' Requests
           </button>
         </nav>
-        
-        {/* Category filter */}
-        {availableCategories.length > 0 && (
+      </div>
+      
+      {/* Category filter */}
+      {availableCategories.length > 0 && (
+        <div className="mb-4 flex justify-end">
           <CategoryFilterDropdown
             categories={availableCategories}
             activeCategories={activeCategories}
             onChange={setActiveCategories}
           />
-        )}
-      </div>
+        </div>
+      )}
       
       {/* Loading state */}
       {loading && (
@@ -625,9 +616,9 @@ const PrayerRequests = () => {
       {!loading && (
         <div className="space-y-4">
           {filteredPrayers.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 text-center">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
               <FaPray className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No prayer requests found</h3>
+              <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No prayer requests found</h3>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {filter !== 'all'
                   ? `No ${filter === 'mine' ? 'personal' : 'others'} prayer requests found.`
@@ -666,7 +657,7 @@ const PrayerRequests = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={addPrayerRequest}
-        categoryOptions={[...new Set([...defaultCategoryOptions, ...availableCategories])]}
+        categoryOptions={[...availableCategories]}
         isGlobal={scope === 'global'}
       />
     </div>

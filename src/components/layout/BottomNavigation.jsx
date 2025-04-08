@@ -1,60 +1,66 @@
 // src/components/layout/BottomNavigation.jsx
-import { NavLink } from 'react-router-dom'
-import { FaHome, FaCalendarAlt, FaMusic, FaPray, FaUser } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import { FaHome, FaCalendarAlt, FaMusic, FaPray, FaChurch, FaUser } from 'react-icons/fa'
+import { useLocation } from 'react-router-dom'
 
 const BottomNavigation = () => {
+  const location = useLocation();
+  
+  // Function to check if a path is active
+  const isActive = (path) => {
+    return location.pathname === path;
+  };
+
   return (
     <nav className="fixed bottom-0 w-full bg-white border-t border-gray-200 py-2 md:hidden dark:bg-dark-secondary dark:border-gray-800">
       <div className="flex justify-around items-center">
-        <NavLink 
+        <Link 
           to="/dashboard" 
-          className={({ isActive }) => 
-            `flex flex-col items-center p-2 text-xs ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`
-          }
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/dashboard') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
         >
           <FaHome className="text-xl mb-1" />
           <span>Home</span>
-        </NavLink>
+        </Link>
         
-        <NavLink 
+        <Link 
           to="/calendar" 
-          className={({ isActive }) => 
-            `flex flex-col items-center p-2 text-xs ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`
-          }
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/calendar') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
         >
           <FaCalendarAlt className="text-xl mb-1" />
           <span>Calendar</span>
-        </NavLink>
+        </Link>
         
-        <NavLink 
+        <Link 
           to="/songs" 
-          className={({ isActive }) => 
-            `flex flex-col items-center p-2 text-xs ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`
-          }
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/songs') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
         >
           <FaMusic className="text-xl mb-1" />
           <span>Songs</span>
-        </NavLink>
+        </Link>
         
-        <NavLink 
+        <Link 
           to="/prayer-requests" 
-          className={({ isActive }) => 
-            `flex flex-col items-center p-2 text-xs ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`
-          }
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/prayer-requests') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
         >
           <FaPray className="text-xl mb-1" />
           <span>Prayer</span>
-        </NavLink>
+        </Link>
         
-        <NavLink 
+        <Link 
+          to="/churches" 
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/churches') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
+        >
+          <FaChurch className="text-xl mb-1" />
+          <span>Churches</span>
+        </Link>
+        
+        <Link 
           to="/profile" 
-          className={({ isActive }) => 
-            `flex flex-col items-center p-2 text-xs ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`
-          }
+          className={`flex flex-col items-center p-2 text-xs ${isActive('/profile') ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}
         >
           <FaUser className="text-xl mb-1" />
           <span>Profile</span>
-        </NavLink>
+        </Link>
       </div>
     </nav>
   )

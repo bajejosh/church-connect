@@ -1,5 +1,6 @@
-import React, { useRef } from 'react';
-import { FaUser, FaChurch, FaEdit, FaCamera } from 'react-icons/fa';
+import React, { useRef, useState } from 'react';
+import { FaUser, FaEdit, FaCamera, FaCrop } from 'react-icons/fa';
+import ImagePositionEditor from './ImagePositionEditor';
 
 const ProfileHeader = ({ 
   profile, 
@@ -9,10 +10,14 @@ const ProfileHeader = ({
   onEditProfile,
   uploadingAvatar,
   uploadingCover,
+  onAvatarPositionChange,
+  onCoverPositionChange,
   stats
 }) => {
   const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
+  const [editingCoverPosition, setEditingCoverPosition] = useState(false);
+  const [editingAvatarPosition, setEditingAvatarPosition] = useState(false);
   
   const handleAvatarClick = () => {
     if (isCurrentUser) {
@@ -26,6 +31,20 @@ const ProfileHeader = ({
     }
   };
   
+  const handleSaveAvatarPosition = (position) => {
+    if (onAvatarPositionChange) {
+      onAvatarPositionChange(position);
+    }
+    setEditingAvatarPosition(false);
+  };
+  
+  const handleSaveCoverPosition = (position) => {
+    if (onCoverPositionChange) {
+      onCoverPositionChange(position);
+    }
+    setEditingCoverPosition(false);
+  };
+  
   return (
     <>
       {/* Cover Photo */}
@@ -35,21 +54,43 @@ const ProfileHeader = ({
             src={profile.coverUrl} 
             alt="Cover" 
             className="w-full h-full object-cover"
+            style={{ 
+              objectPosition: profile.coverPosition ? 
+                `${profile.coverPosition.x}% ${profile.coverPosition.y}%` : 
+                '50% 50%' 
+            }}
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-r from-blue-500 to-purple-600" />
         )}
         
-        {/* Edit cover button */}
+        {/* Edit cover buttons */}
         {isCurrentUser && (
           <>
-            <button 
-              className="absolute bottom-2 right-2 bg-white bg-opacity-70 p-2 rounded-full"
-              onClick={handleCoverClick}
-              disabled={uploadingCover}
-            >
-              <FaCamera className="text-gray-700" />
-            </button>
+            <div className="absolute bottom-2 right-2 flex space-x-2">
+              {/* Reposition cover button - only show if there's an image */}
+              {profile.coverUrl && (
+                <button 
+                  className="bg-white bg-opacity-70 p-2 rounded-full hover:bg-opacity-100 transition-all"
+                  onClick={() => setEditingCoverPosition(true)}
+                  disabled={uploadingCover}
+                  title="Adjust cover photo position"
+                >
+                  <FaCrop className="text-gray-700" />
+                </button>
+              )}
+              
+              {/* Upload cover button */}
+              <button 
+                className="bg-white bg-opacity-70 p-2 rounded-full hover:bg-opacity-100 transition-all shadow-lg"
+                onClick={handleCoverClick}
+                disabled={uploadingCover}
+                title="Upload new cover photo"
+              >
+                <FaCamera className="text-gray-700" />
+              </button>
+            </div>
+            
             <input 
               type="file"
               ref={coverInputRef}
@@ -71,6 +112,11 @@ const ProfileHeader = ({
                 src={profile.avatarUrl} 
                 alt={profile.fullName} 
                 className="w-full h-full rounded-full object-cover"
+                style={{ 
+                  objectPosition: profile.avatarPosition ? 
+                    `${profile.avatarPosition.x}% ${profile.avatarPosition.y}%` : 
+                    '50% 50%' 
+                }}
               />
             ) : (
               <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
@@ -78,16 +124,33 @@ const ProfileHeader = ({
               </div>
             )}
             
-            {/* Edit avatar button */}
+            {/* Edit avatar buttons */}
             {isCurrentUser && (
               <>
-                <button 
-                  className="absolute bottom-0 right-0 bg-white bg-opacity-70 p-2 rounded-full shadow"
-                  onClick={handleAvatarClick}
-                  disabled={uploadingAvatar}
-                >
-                  <FaCamera className="text-gray-700" />
-                </button>
+                <div className="absolute -bottom-2 -right-2 flex space-x-1">
+                  {/* Reposition avatar button - only show if there's an image */}
+                  {profile.avatarUrl && (
+                    <button 
+                      className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-all z-10"
+                      onClick={() => setEditingAvatarPosition(true)}
+                      disabled={uploadingAvatar}
+                      title="Adjust profile picture position"
+                    >
+                      <FaCrop className="text-gray-700 text-sm" />
+                    </button>
+                  )}
+                  
+                  {/* Upload avatar button */}
+                  <button 
+                    className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-all z-10"
+                    onClick={handleAvatarClick}
+                    disabled={uploadingAvatar}
+                    title="Upload new profile picture"
+                  >
+                    <FaCamera className="text-gray-700 text-sm" />
+                  </button>
+                </div>
+                
                 <input 
                   type="file"
                   ref={avatarInputRef}
@@ -143,6 +206,27 @@ const ProfileHeader = ({
           </div>
         </div>
       </div>
+      
+      {/* Image Position Editors */}
+      {editingAvatarPosition && profile.avatarUrl && (
+        <ImagePositionEditor
+          imageUrl={profile.avatarUrl}
+          onSave={handleSaveAvatarPosition}
+          onCancel={() => setEditingAvatarPosition(false)}
+          aspectRatio={1} // Square for avatar
+          initialPosition={profile.avatarPosition || { x: 50, y: 50 }}
+        />
+      )}
+      
+      {editingCoverPosition && profile.coverUrl && (
+        <ImagePositionEditor
+          imageUrl={profile.coverUrl}
+          onSave={handleSaveCoverPosition}
+          onCancel={() => setEditingCoverPosition(false)}
+          aspectRatio={3} // Wide for cover
+          initialPosition={profile.coverPosition || { x: 50, y: 50 }}
+        />
+      )}
     </>
   );
 };

@@ -54,6 +54,20 @@ const Feed = ({ currentUserId, churchId }) => {
     }
   }, [currentUserId, user]);
   
+  // Handle post update
+  const handlePostUpdated = (updatedPost) => {
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    );
+  };
+  
+  // Handle post deletion
+  const handlePostDeleted = (postId) => {
+    setPosts(prevPosts => prevPosts.filter(post => post.id !== postId));
+  };
+  
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -425,7 +439,13 @@ const Feed = ({ currentUserId, churchId }) => {
       ) : (
         <div className="space-y-4">
           {posts.map(post => (
-            <Post key={post.id} post={post} currentUserId={currentUserId} />
+            <Post 
+              key={post.id} 
+              post={post} 
+              currentUserId={currentUserId} 
+              onPostUpdated={handlePostUpdated}
+              onPostDeleted={handlePostDeleted}
+            />
           ))}
           
           {loading && (

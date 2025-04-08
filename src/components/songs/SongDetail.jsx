@@ -1,7 +1,7 @@
 // src/components/songs/SongDetail.jsx
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaMusic, FaPaperclip, FaChevronDown, FaChevronUp, FaExchangeAlt, FaCalendarCheck, FaCheck, FaFont } from 'react-icons/fa';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { FaArrowLeft, FaMusic, FaPaperclip, FaChevronDown, FaChevronUp, FaExchangeAlt, FaCalendarCheck, FaCheck, FaFont, FaEdit } from 'react-icons/fa';
 import { transposeChordLine, getMusicalKeys } from '../../lib/chordTransposer';
 import { fetchSongById } from '../../lib/songAPI';
 import { supabase } from '../../lib/supabase';
@@ -214,15 +214,25 @@ const SongDetail = () => {
   return (
     <div className="pb-[100px] flex flex-col min-h-screen bg-white dark:bg-gray-800 px-4 md:px-6">
       {/* Back button row */}
-      <div className="py-2 border-b border-gray-200 dark:border-gray-700">
+      <div className="py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between">
         <button 
           onClick={handleBackToService}
           className="text-gray-600 dark:text-gray-400 flex items-center"
           aria-label="Back"
         >
           <FaArrowLeft className="mr-2" /> 
-          <span className="text-sm text-gray-600 dark:text-gray-400">Back to Service</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Back to {eventId ? "Service" : "Songs"}</span>
         </button>
+        
+        {/* Edit button */}
+        <Link 
+          to={`/songs/edit/${id}`}
+          className="text-blue-600 dark:text-blue-400 flex items-center"
+          aria-label="Edit Song"
+        >
+          <FaEdit className="mr-2" /> 
+          <span className="text-sm">Edit Song</span>
+        </Link>
       </div>
       
       {/* Title row */}

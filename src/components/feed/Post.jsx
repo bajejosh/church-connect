@@ -1,4 +1,3 @@
-// src/components/feed/Post.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   FaRegHeart, 
@@ -6,14 +5,17 @@ import {
   FaRegComment, 
   FaPray, 
   FaUser,
-  FaEllipsisH
+  FaEllipsisH,
+  FaEdit,
+  FaTrash
 } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
 import PostHeader from './PostHeader';
 import { parseContentWithMedia } from '../../utils/mediaUtils';
+import PostEditor from './PostEditor';
+import DeleteConfirmation from '../common/DeleteConfirmation';
 
-// Post component
-const Post = ({ post, currentUserId }) => {
+const Post = ({ post, currentUserId, onPostUpdated, onPostDeleted }) => {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState([]);
@@ -22,6 +24,9 @@ const Post = ({ post, currentUserId }) => {
   const [userReactions, setUserReactions] = useState(post.userReactions || {});
   const [authorInfo, setAuthorInfo] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Initialize user reactions from post data
   useEffect(() => {
@@ -140,6 +145,67 @@ const Post = ({ post, currentUserId }) => {
       fetchComments();
     }
   }, [showComments]);
+  
+  // Handle edit post
+  const handleEditPost = () => {
+    setIsEditing(true);
+    setShowMenu(false);
+  };
+  
+  // Handle update after editing
+  const handlePostUpdated = (updatedPost) => {
+    setIsEditing(false);
+    if (onPostUpdated) {
+      onPostUpdated(updatedPost);
+    } else {
+      // If no callback provided, update the post in place
+      // This requires a deep copy to ensure the UI updates
+      const updatedPostCopy = JSON.parse(JSON.stringify(updatedPost));
+      Object.assign(post, updatedPostCopy);
+    }
+  };
+  
+  // Handle delete post
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+    setShowMenu(false);
+  };
+  
+  // Confirm delete post
+  const handleDeleteConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      
+      // Delete the post from the database
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', post.id);
+        
+      if (error) throw error;
+      
+      setShowDeleteConfirm(false);
+      
+      // Call the callback if provided
+      if (onPostDeleted) {
+        onPostDeleted(post.id);
+      }
+      
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert('Failed to delete post: ' + error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
   
   // Get commenter's display name
   const getCommenterName = (comment) => {
@@ -320,217 +386,251 @@ const Post = ({ post, currentUserId }) => {
   };
   
   return (
-    <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-4">
-      {/* Post header */}
-      <div className="p-4 flex items-center justify-between">
-        <PostHeader 
-          post={post}
-          authorInfo={authorInfo}
-          relativeTime={relativeTime}
-          formattedDate={formattedDate}
-          isEvent={isEvent}
-          isPrayer={isPrayer} 
-          isAnnouncement={isAnnouncement}
+    <>
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <DeleteConfirmation
+          title="Delete Post"
+          message="Are you sure you want to delete this post? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          isDeleting={isDeleting}
+          onConfirm={handleDeleteConfirm}
+          onCancel={handleCancelDelete}
         />
-        
-        {/* Post menu */}
-        <div className="relative ml-auto">
-          <button 
-            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-            onClick={() => setShowMenu(!showMenu)}
-          >
-            <FaEllipsisH />
-          </button>
-          
-          {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
-              <div className="py-1">
-                <button 
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
-                  onClick={() => setShowMenu(false)}
-                >
-                  Save post
-                </button>
-                {currentUserId === post.user_id && (
-                  <>
+      )}
+      
+      {/* Post Editor Modal */}
+      {isEditing ? (
+        <PostEditor 
+          post={post} 
+          onPostUpdated={handlePostUpdated} 
+          onCancel={handleCancelEdit} 
+        />
+      ) : (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden mb-4">
+          {/* Post header */}
+          <div className="p-4 flex items-center justify-between">
+            <PostHeader 
+              post={post}
+              authorInfo={authorInfo}
+              relativeTime={relativeTime}
+              formattedDate={formattedDate}
+              isEvent={isEvent}
+              isPrayer={isPrayer} 
+              isAnnouncement={isAnnouncement}
+            />
+            
+            {/* Post menu */}
+            <div className="relative ml-auto">
+              <button 
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                onClick={() => setShowMenu(!showMenu)}
+              >
+                <FaEllipsisH />
+              </button>
+              
+              {showMenu && (
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10">
+                  <div className="py-1">
                     <button 
                       className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
                       onClick={() => setShowMenu(false)}
                     >
-                      Edit post
+                      Save post
                     </button>
-                    <button 
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600"
-                      onClick={() => setShowMenu(false)}
-                    >
-                      Delete post
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Post content */}
-      <div className="p-4 pt-0">
-        <div className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
-          {renderPostContent()}
-        </div>
-        
-        {/* Media if available */}
-        {post.media_urls && post.media_urls.length > 0 && (
-          <div className={`mt-3 grid ${post.media_urls.length > 1 ? 'grid-cols-2 gap-2' : 'grid-cols-1'}`}>
-            {post.media_urls.map((url, i) => (
-              <img 
-                key={i} 
-                src={url} 
-                alt={`Post media ${i+1}`}
-                className="w-full h-auto rounded-md object-cover"
-              />
-            ))}
-          </div>
-        )}
-      </div>
-      
-      {/* Post stats */}
-      {(likesCount > 0 || prayerCount > 0 || post.commentsCount > 0) && (
-        <div className="px-4 py-2 flex justify-between text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
-          <div>
-            {likesCount > 0 && (
-              <span className="flex items-center inline-block mr-3">
-                <FaHeart className="text-red-500 mr-1" /> {likesCount}
-              </span>
-            )}
-            {prayerCount > 0 && (
-              <span className="flex items-center inline-block mr-3">
-                <FaPray className="text-purple-500 mr-1" /> {prayerCount}
-              </span>
-            )}
-          </div>
-          
-          {post.commentsCount > 0 && (
-            <button 
-              className="hover:underline"
-              onClick={() => setShowComments(!showComments)}
-            >
-              {post.commentsCount} {post.commentsCount === 1 ? 'comment' : 'comments'}
-            </button>
-          )}
-        </div>
-      )}
-      
-      {/* Post actions - using flex justify-between instead for proper horizontal alignment */}
-      <div className="px-2 py-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
-        <button 
-          className={`flex-1 flex items-center justify-center p-2 rounded-md ${
-            userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          onClick={() => toggleReaction('like')}
-        >
-          <span className="inline-flex items-center">
-            {userReactions.like ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
-            Like
-          </span>
-        </button>
-        
-        <button 
-          className="flex-1 flex items-center justify-center p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
-          onClick={() => setShowComments(!showComments)}
-        >
-          <span className="inline-flex items-center">
-            <FaRegComment className="mr-2" />
-            Comment
-          </span>
-        </button>
-        
-        <button 
-          className={`flex-1 flex items-center justify-center p-2 rounded-md ${
-            userReactions.pray ? 'text-purple-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          onClick={() => toggleReaction('pray')}
-        >
-          <span className="inline-flex items-center">
-            <FaPray className="mr-2" />
-            Pray
-          </span>
-        </button>
-      </div>
-      
-      {/* Comments section */}
-      {showComments && (
-        <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700">
-          {/* Comment form */}
-          {currentUserId && (
-            <form onSubmit={handleCommentSubmit} className="mb-4 flex">
-              <input
-                type="text"
-                placeholder="Write a comment..."
-                className="flex-1 p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                disabled={submittingComment}
-              />
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-r-md disabled:opacity-50"
-                disabled={!comment.trim() || submittingComment}
-              >
-                {submittingComment ? 'Sending...' : 'Post'}
-              </button>
-            </form>
-          )}
-          
-          {/* Comments list */}
-          {loadingComments ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-              Loading comments...
-            </div>
-          ) : comments.length === 0 ? (
-            <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
-              No comments yet. Be the first to comment!
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {comments.map(comment => (
-                <div key={comment.id} className="flex space-x-3">
-                  {/* User avatar */}
-                  <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
-                    {comment.profiles?.avatar_url ? (
-                      <img 
-                        src={comment.profiles.avatar_url} 
-                        alt={getCommenterName(comment)} 
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full flex items-center justify-center">
-                        <FaUser className="text-gray-400 dark:text-gray-500" />
-                      </div>
+                    {currentUserId === post.user_id && (
+                      <>
+                        <button 
+                          className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                          onClick={handleEditPost}
+                        >
+                          <FaEdit className="mr-2" /> Edit post
+                        </button>
+                        <button 
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600 flex items-center"
+                          onClick={handleDeleteClick}
+                        >
+                          <FaTrash className="mr-2" /> Delete post
+                        </button>
+                      </>
                     )}
                   </div>
-                  
-                  {/* Comment content */}
-                  <div className="flex-1">
-                    <div className="bg-white dark:bg-gray-700 rounded-lg px-3 py-2 shadow-sm">
-                      <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                        {getCommenterName(comment)}
-                      </div>
-                      <div className="text-gray-800 dark:text-gray-200">
-                        {renderCommentContent(comment.content, comment.id)}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">
-                      {formatRelativeTime(comment.created_at)}
-                    </div>
-                  </div>
                 </div>
-              ))}
+              )}
+            </div>
+          </div>
+          
+          {/* Post content */}
+          <div className="p-4 pt-0">
+            <div className="text-gray-800 dark:text-gray-200 whitespace-pre-line">
+              {renderPostContent()}
+            </div>
+            
+            {/* Media if available */}
+            {post.media_urls && post.media_urls.length > 0 && (
+              <div className={`mt-3 grid ${post.media_urls.length > 1 ? 'grid-cols-2 gap-2' : 'grid-cols-1'}`}>
+                {post.media_urls.map((url, i) => {
+                  const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
+                  return isVideo ? (
+                    <video 
+                      key={i}
+                      src={url} 
+                      className="w-full h-auto rounded-md object-cover"
+                      controls 
+                    />
+                  ) : (
+                    <img 
+                      key={i} 
+                      src={url} 
+                      alt={`Post media ${i+1}`}
+                      className="w-full h-auto rounded-md object-cover"
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          
+          {/* Post stats */}
+          {(likesCount > 0 || prayerCount > 0 || post.commentsCount > 0) && (
+            <div className="px-4 py-2 flex justify-between text-sm text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
+              <div>
+                {likesCount > 0 && (
+                  <span className="flex items-center inline-block mr-3">
+                    <FaHeart className="text-red-500 mr-1" /> {likesCount}
+                  </span>
+                )}
+                {prayerCount > 0 && (
+                  <span className="flex items-center inline-block mr-3">
+                    <FaPray className="text-purple-500 mr-1" /> {prayerCount}
+                  </span>
+                )}
+              </div>
+              
+              {post.commentsCount > 0 && (
+                <button 
+                  className="hover:underline"
+                  onClick={() => setShowComments(!showComments)}
+                >
+                  {post.commentsCount} {post.commentsCount === 1 ? 'comment' : 'comments'}
+                </button>
+              )}
+            </div>
+          )}
+          
+          {/* Post actions - using flex justify-between instead for proper horizontal alignment */}
+          <div className="px-2 py-2 flex justify-between items-center border-t border-gray-100 dark:border-gray-700">
+            <button 
+              className={`flex-1 flex items-center justify-center p-2 rounded-md ${
+                userReactions.like ? 'text-red-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+              onClick={() => toggleReaction('like')}
+            >
+              <span className="inline-flex items-center">
+                {userReactions.like ? <FaHeart className="mr-2" /> : <FaRegHeart className="mr-2" />}
+                Like
+              </span>
+            </button>
+            
+            <button 
+              className="flex-1 flex items-center justify-center p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-md"
+              onClick={() => setShowComments(!showComments)}
+            >
+              <span className="inline-flex items-center">
+                <FaRegComment className="mr-2" />
+                Comment
+              </span>
+            </button>
+            
+            <button 
+              className={`flex-1 flex items-center justify-center p-2 rounded-md ${
+                userReactions.pray ? 'text-purple-500 font-medium' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+              }`}
+              onClick={() => toggleReaction('pray')}
+            >
+              <span className="inline-flex items-center">
+                <FaPray className="mr-2" />
+                Pray
+              </span>
+            </button>
+          </div>
+          
+          {/* Comments section */}
+          {showComments && (
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700">
+              {/* Comment form */}
+              {currentUserId && (
+                <form onSubmit={handleCommentSubmit} className="mb-4 flex">
+                  <input
+                    type="text"
+                    placeholder="Write a comment..."
+                    className="flex-1 p-2 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-l-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    disabled={submittingComment}
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-r-md disabled:opacity-50"
+                    disabled={!comment.trim() || submittingComment}
+                  >
+                    {submittingComment ? 'Sending...' : 'Post'}
+                  </button>
+                </form>
+              )}
+              
+              {/* Comments list */}
+              {loadingComments ? (
+                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
+                  Loading comments...
+                </div>
+              ) : comments.length === 0 ? (
+                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">
+                  No comments yet. Be the first to comment!
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {comments.map(comment => (
+                    <div key={comment.id} className="flex space-x-3">
+                      {/* User avatar */}
+                      <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex-shrink-0">
+                        {comment.profiles?.avatar_url ? (
+                          <img 
+                            src={comment.profiles.avatar_url} 
+                            alt={getCommenterName(comment)} 
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center">
+                            <FaUser className="text-gray-400 dark:text-gray-500" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Comment content */}
+                      <div className="flex-1">
+                        <div className="bg-white dark:bg-gray-700 rounded-lg px-3 py-2 shadow-sm">
+                          <div className="font-medium text-sm text-gray-900 dark:text-gray-100">
+                            {getCommenterName(comment)}
+                          </div>
+                          <div className="text-gray-800 dark:text-gray-200">
+                            {renderCommentContent(comment.content, comment.id)}
+                          </div>
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-2">
+                          {formatRelativeTime(comment.created_at)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
