@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaCalendarAlt, FaPray, FaBullhorn } from 'react-icons/fa';
 import { supabase } from '../../lib/supabase';
+import UserAvatar from '../common/UserAvatar'; // Import the UserAvatar component
 
 /**
  * Component for rendering post headers, handles both anonymous and regular posts
@@ -94,27 +95,6 @@ const PostHeader = ({
     // Last resort: just show "User"
     return "User";
   };
-  
-  // Get avatar URL from available sources
-  const getAvatarUrl = () => {
-    if (authorInfo?.avatar_url) {
-      return authorInfo.avatar_url;
-    }
-    
-    if (fetchedAuthor?.avatar_url) {
-      return fetchedAuthor.avatar_url;
-    }
-    
-    if (post.avatar_url) {
-      return post.avatar_url;
-    }
-    
-    if (post.profile?.avatar_url) {
-      return post.profile.avatar_url;
-    }
-    
-    return null;
-  };
 
   return (
     <div className="flex items-center">
@@ -145,18 +125,14 @@ const PostHeader = ({
       ) : (
         // Regular post with link to profile
         <div className="flex items-center cursor-pointer" onClick={() => navigate(`/profile/${post.user_id}`)}>
-          <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 mr-3">
-            {getAvatarUrl() ? (
-              <img 
-                src={getAvatarUrl()} 
-                alt={getDisplayName()} 
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center">
-                <FaUser className="text-gray-400 dark:text-gray-500" />
-              </div>
-            )}
+          {/* Replace the manual avatar rendering with UserAvatar component */}
+          <div className="mr-3">
+            <UserAvatar 
+              userId={post.user_id}
+              fullName={getDisplayName()}
+              avatarUrl={authorInfo?.avatar_url || fetchedAuthor?.avatar_url || post.avatar_url || post.profile?.avatar_url}
+              size="lg"
+            />
           </div>
           <div className="flex flex-col">
             <h3 className="font-medium text-gray-900 dark:text-gray-100">{getDisplayName()}</h3>

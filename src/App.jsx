@@ -22,6 +22,7 @@ import Services from './pages/Services'
 import Profile from './pages/Profile'
 import PrayerRequests from './pages/PrayerRequests'
 import Churches from './pages/Churches'
+import Notifications from './pages/Notifications'
 
 // Song Management Components
 import SongDetail from './components/songs/SongDetail'
@@ -50,6 +51,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/notifications" element={<Notifications />} />
             
             {/* Song Routes */}
             <Route path="/songs" element={<Songs />} />

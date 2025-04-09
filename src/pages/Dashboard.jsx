@@ -1,7 +1,7 @@
 // src/pages/Dashboard.jsx
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FaCalendarAlt, FaMusic, FaPray, FaUsers, FaChurch } from 'react-icons/fa'
+import { FaChurch } from 'react-icons/fa'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import dayjs from 'dayjs'
@@ -23,100 +23,99 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-      setLoading(true)
-      
-      // WORKAROUND: Due to RLS policy issues with profiles table causing infinite recursion
-      // Store churchId in localStorage for immediate use in session
-      const localChurchId = localStorage.getItem('userChurchId')
-      
-      // Only query profiles if we don't have cached data
-      if (!localChurchId) {
-      try {
-          // Get church info for current user
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-          .select('church_id')
-          .eq('id', user.id)
-          .single()
-                
-              if (profileError) {
-                console.error('Profile error:', profileError)
-              } else if (profileData?.church_id) {
-                setChurchId(profileData.church_id)
-                localStorage.setItem('userChurchId', profileData.church_id)
-              }
-            } catch (profileQueryError) {
-              console.error('Error querying profiles:', profileQueryError)
+        setLoading(true)
+        
+        // WORKAROUND: Due to RLS policy issues with profiles table causing infinite recursion
+        // Store churchId in localStorage for immediate use in session
+        const localChurchId = localStorage.getItem('userChurchId')
+        
+        // Only query profiles if we don't have cached data
+        if (!localChurchId) {
+          try {
+            // Get church info for current user
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('church_id')
+              .eq('id', user.id)
+              .single()
+                  
+            if (profileError) {
+              console.error('Profile error:', profileError)
+            } else if (profileData?.church_id) {
+              setChurchId(profileData.church_id)
+              localStorage.setItem('userChurchId', profileData.church_id)
             }
+          } catch (profileQueryError) {
+            console.error('Error querying profiles:', profileQueryError)
+          }
+        } else {
+          setChurchId(localChurchId)
+        }
+        
+        // If we have a churchId from either localStorage or query
+        if (churchId || localChurchId) {
+          const churchIdToUse = churchId || localChurchId
+          
+          // Get church details
+          const { data: churchData, error: churchError } = await supabase
+            .from('churches')
+            .select('*')
+            .eq('id', churchIdToUse)
+            .single()
+          
+          if (churchError) {
+            console.error('Church error:', churchError)
           } else {
-            setChurchId(localChurchId)
+            setChurchInfo(churchData)
           }
           
-          // If we have a churchId from either localStorage or query
-          if (churchId || localChurchId) {
-            const churchIdToUse = churchId || localChurchId
-            
-            // Get church details
-            // Get church details
-            const { data: churchData, error: churchError } = await supabase
-              .from('churches')
-              .select('*')
-              .eq('id', churchIdToUse)
-              .single()
-            
-            if (churchError) {
-              console.error('Church error:', churchError)
-            } else {
-              setChurchInfo(churchData)
-            }
-            
-            // Get upcoming events
-            const now = dayjs().toISOString()
-            const future = dayjs().add(7, 'day').toISOString()
-            
-            const { data: eventData, error: eventError } = await supabase
-              .from('events')
-              .select('*')
-              .eq('church_id', churchIdToUse)
-              .gte('start_time', now)
-              .lte('start_time', future)
-              .order('start_time', { ascending: true })
-              .limit(5)
-            
-            if (eventError) {
-              console.error('Event error:', eventError)
-            } else {
-              setUpcomingEvents(eventData || [])
-            }
-            
-            // Get recent songs
-            const { data: songData, error: songError } = await supabase
-              .from('songs')
-              .select('*')
-              .eq('church_id', churchIdToUse)
-              .order('created_at', { ascending: false })
-              .limit(5)
-            
-            if (songError) {
-              console.error('Song error:', songError)
-            } else {
-              setRecentSongs(songData || [])
-            }
-            
-            // Get recent prayer requests
-            const { data: prayerData, error: prayerError } = await supabase
-              .from('prayer_requests')
-              .select('*')
-              .eq('church_id', churchIdToUse)
-              .eq('is_private', false)
-              .order('created_at', { ascending: false })
-              .limit(5)
-            
-            if (prayerError) {
-              console.error('Prayer error:', prayerError)
-            } else {
-              setRecentPrayers(prayerData || [])
-            }
+          // Get upcoming events
+          const now = dayjs().toISOString()
+          const future = dayjs().add(7, 'day').toISOString()
+          
+          const { data: eventData, error: eventError } = await supabase
+            .from('events')
+            .select('*')
+            .eq('church_id', churchIdToUse)
+            .gte('start_time', now)
+            .lte('start_time', future)
+            .order('start_time', { ascending: true })
+            .limit(5)
+          
+          if (eventError) {
+            console.error('Event error:', eventError)
+          } else {
+            setUpcomingEvents(eventData || [])
+          }
+          
+          // Get recent songs
+          const { data: songData, error: songError } = await supabase
+            .from('songs')
+            .select('*')
+            .eq('church_id', churchIdToUse)
+            .order('created_at', { ascending: false })
+            .limit(5)
+          
+          if (songError) {
+            console.error('Song error:', songError)
+          } else {
+            setRecentSongs(songData || [])
+          }
+          
+          // Get recent prayer requests
+          const { data: prayerData, error: prayerError } = await supabase
+            .from('prayer_requests')
+            .select('*')
+            .eq('church_id', churchIdToUse)
+            .eq('is_private', false)
+            .order('created_at', { ascending: false })
+            .limit(5)
+          
+          if (prayerError) {
+            console.error('Prayer error:', prayerError)
+          } else {
+            setRecentPrayers(prayerData || [])
+          }
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error)
@@ -133,11 +132,6 @@ const Dashboard = () => {
     return (
       <div className="space-y-4 pt-2">
         <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
-          ))}
-        </div>
         <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
       </div>
     )
@@ -145,11 +139,7 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-4 pt-2">
-    <div>
-    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Feed</h1>
-        {churchInfo && (
-          <p className="text-gray-600 dark:text-gray-300">{churchInfo.name}</p>
-        )}
+      <div>
         {!churchInfo && (
           <div className="mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
             <p className="text-yellow-700">
@@ -170,41 +160,6 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Feed column */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Quick actions */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link 
-              to="/calendar" 
-              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <FaCalendarAlt className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Calendar</span>
-            </Link>
-            
-            <Link 
-              to="/songs" 
-              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <FaMusic className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Songs</span>
-            </Link>
-            
-            <Link 
-              to="/prayer-requests" 
-              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <FaPray className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Prayer</span>
-            </Link>
-            
-            <Link 
-              to="/teams" 
-              className="flex flex-col items-center justify-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow"
-            >
-              <FaUsers className="text-3xl text-blue-600 mb-3" />
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">Teams</span>
-            </Link>
-          </div>
-          
           {/* Feed */}
           <Feed currentUserId={user.id} churchId={churchId} />
         </div>
@@ -212,7 +167,7 @@ const Dashboard = () => {
         {/* Right sidebar */}
         <div className="space-y-6">
           {/* Upcoming events */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Upcoming Events</h2>
               <Link to="/calendar" className="text-sm text-blue-600 font-medium">
@@ -223,20 +178,20 @@ const Dashboard = () => {
             {upcomingEvents.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming events in the next 7 days</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {upcomingEvents.map(event => (
-                  <div key={event.id} className="flex items-start p-3 border border-gray-100 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <div className="min-w-[60px] text-center">
+                  <div key={event.id} className="flex items-start p-2 border border-gray-100 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <div className="min-w-[50px] text-center">
                       <div className="font-bold text-gray-900 dark:text-gray-100">{dayjs(event.start_time).format('MMM')}</div>
-                      <div className="text-2xl font-bold text-blue-600">{dayjs(event.start_time).format('DD')}</div>
+                      <div className="text-xl font-bold text-blue-600">{dayjs(event.start_time).format('DD')}</div>
                     </div>
                     <div className="ml-3">
                       <div className="font-medium text-gray-900 dark:text-gray-100">{event.title}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {dayjs(event.start_time).format('h:mm A')} - {dayjs(event.end_time).format('h:mm A')}
                       </div>
                       {event.location && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{event.location}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{event.location}</div>
                       )}
                     </div>
                   </div>
@@ -246,7 +201,7 @@ const Dashboard = () => {
           </div>
           
           {/* Recent prayer requests */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Prayer Requests</h2>
               <Link to="/prayer-requests" className="text-sm text-blue-600 font-medium">
@@ -257,11 +212,11 @@ const Dashboard = () => {
             {recentPrayers.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">No prayer requests yet</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentPrayers.map(prayer => (
-                  <div key={prayer.id} className="p-3 border-b last:border-0">
+                  <div key={prayer.id} className="p-2 border-b last:border-0">
                     <div className="font-medium text-gray-900 dark:text-gray-100">{prayer.title}</div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">
                       {prayer.description}
                     </div>
                     <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
@@ -274,7 +229,7 @@ const Dashboard = () => {
           </div>
           
           {/* Recent songs */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Songs</h2>
               <Link to="/songs" className="text-sm text-blue-600 font-medium">
@@ -285,14 +240,13 @@ const Dashboard = () => {
             {recentSongs.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm">No songs added yet</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {recentSongs.map(song => (
-                  <div key={song.id} className="flex items-center p-3 border-b last:border-0">
-                    <FaMusic className="text-blue-600 mr-3" />
+                  <div key={song.id} className="flex items-center p-2 border-b last:border-0">
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{song.title}</div>
+                      <div className="font-medium text-gray-900 dark:text-gray-100 text-sm">{song.title}</div>
                       {song.artist && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{song.artist}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{song.artist}</div>
                       )}
                     </div>
                   </div>

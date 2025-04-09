@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
+import UserAvatar from '../common/UserAvatar'; // Import the UserAvatar component
 import { 
   FaUser, 
   FaImage, 
@@ -170,7 +171,8 @@ const PostComposer = ({ onPostCreated, churchId }) => {
   );
   
   // Get profile data from user object
-  const { avatar_url, full_name } = user?.user_metadata || {};
+  const fullName = user?.user_metadata?.full_name;
+  const firstName = fullName?.split(' ')[0] || 'there';
   
   return (
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
@@ -179,24 +181,18 @@ const PostComposer = ({ onPostCreated, churchId }) => {
           {/* User info and text area */}
           <div className="flex space-x-3">
             <div className="flex-shrink-0">
-              <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200">
-                {avatar_url ? (
-                  <img 
-                    src={avatar_url} 
-                    alt={full_name} 
-                    className="h-full w-full object-cover" 
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center">
-                    <FaUser className="text-gray-400" />
-                  </div>
-                )}
-              </div>
+              {/* Use the UserAvatar component instead of the basic avatar display */}
+              <UserAvatar 
+                userId={user?.id} 
+                fullName={fullName}
+                email={user?.email}
+                size="lg"
+              />
             </div>
             
             <div className="flex-1">
               <textarea
-                placeholder={`What's on your mind, ${full_name?.split(' ')[0] || 'there'}?`}
+                placeholder={`What's on your mind, ${firstName}?`}
                 className="w-full border rounded-lg p-3 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-lg text-gray-700 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 bg-white dark:bg-gray-800 dark:border-gray-700 resize-none"
                 rows={expanded ? 4 : 2}
                 value={content}

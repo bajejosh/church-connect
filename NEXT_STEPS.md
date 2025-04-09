@@ -1,25 +1,44 @@
 # Church Connect - Next Steps
 
 ## Important Notice
-**Current Error:** If you're seeing a function not found error related to `toggle_post_pin`, you need to run the pin post migration!
+**Current Error:** If you're seeing errors with UserAvatar or notifications, please run the latest fix scripts:
+
+To fix profile and notification issues:
+1. Apply these migrations to your Supabase instance in this order:
+   - `20250409_fix_profiles_rls_final.sql` - Fixes profile permission issues
+   - `20250409_add_test_notifications.sql` - Creates test notifications
+2. Replace your `src/components/common/UserAvatar.jsx` file with the fixed version from `UserAvatar.jsx.fix`
+3. Refresh your application
+
+These migrations fix:
+- Profile permission issues causing "406 Not Acceptable" errors
+- Missing notifications
+- Avatar display problems
+
+**Previous Error:** If you're seeing a database error related to notifications (such as `42703: column "recipient_id" does not exist`), you need to run the notifications system fix migration!
+
+To fix this issue:
+1. Apply the `20250409_add_notifications_table_fix.sql` migration to your Supabase instance
+
+**Previous Error:** If you're seeing a function not found error related to `toggle_post_pin`, you need to run the pin post migration!
 
 To fix this issue:
 1. Apply the `20250409_add_post_pinning.sql` migration to your Supabase instance
-2. Either use the Supabase CLI: `npx supabase db push`
-3. Or run the SQL directly in the Supabase SQL editor
-
-Until then, the app will use a fallback method to pin posts, but applying the migration is recommended for better security.
 
 **Previous Error:** If you're seeing `PGRST204: Could not find the 'cover_position' column` error, you need to run the database migrations!
 
 Follow these steps:
 1. Apply the `20250408_add_image_positioning.sql` migration to your Supabase instance
-2. Either use the Supabase CLI: `npx supabase db push`
-3. Or run the SQL directly in the Supabase SQL editor
 
 See the migration README for more details.
 
 ## Recent Updates
+- Fixed profile RLS policies to ensure avatars display correctly
+- Added test notifications to verify the notification system
+- Improved UserAvatar component to handle missing profiles gracefully
+- Created more robust notifications system fix migration that adapts to the current database state
+- Added proper notifications system migration to fix database relationship errors
+- Added comprehensive notifications system documentation
 - Fixed scrollability in the New Prayer Request modal by adding a max height and scrollable content area
 - Improved Prayer Requests page with a more intuitive interface for creating global or church-specific prayer requests
 - Refactored Prayer Requests into modular components for better code organization
@@ -60,34 +79,35 @@ See the migration README for more details.
 - Fixed song update functionality by reverting to Supabase client
 
 ## Current Status
-The app now has improved prayer request creation with a more intuitive interface and scrollable modal, better sidebar layout with no gaps or width inconsistencies, improved dark mode support, better prayer request handling, fixed church management, enhanced media embedding capabilities, and more robust Supabase API interactions.
+The app now has a working notifications system with correct profile permissions, improved profile image handling, more robust notification creation, fixed prayer request creation with a more intuitive interface and scrollable modal, better sidebar layout with no gaps or width inconsistencies, improved dark mode support, better prayer request handling, fixed church management, enhanced media embedding capabilities, and more robust Supabase API interactions.
 
 ## Next Priorities
-1. **Profile Page Improvements** - ✅ Added bio field, improved posts display
-2. **Fix Auth Path Issues** - Apply migration scripts for base path handling
-3. **Enhance Chord Charts** - Add diagrams and Nashville number system support
-4. **Improve Lyrics Display** - Add printable view and better performance
-5. **Media Embedding Enhancements** - Add Spotify and SoundCloud support
-6. **Improve Error Handling** - Add consistent error messages for API operations
-7. **Fix Navigation UX issues** - ✅ Fixed profile redirection, image viewing, and icon alignment
-8. **Dark Mode Refinements** - ✅ Fixed sidebar styling, ensure consistent dark mode experience throughout the app
-9. **Mobile Layout Improvements** - ✅ Fixed sidebar layout issues on mobile and desktop views
-10. **Prayer Request UX Improvements** - ✅ Added more intuitive creation flow with global/church toggle and scrollable modal
-
-## Storage Setup
-- Create a `media` bucket in Supabase storage for post image uploads
-- Configure RLS policies to allow authenticated users to upload to `posts/{user_id}/` path
-- Ensure public read access to the `media` bucket for displaying images
+1. **User Avatar Enhancements** - Add fallback mechanism for missing profiles and better error handling
+2. **Notifications System Enhancements** - Add push notifications and email notifications for important updates
+3. **Profile Page Improvements** - ✅ Added bio field, improved posts display
+4. **Fix Auth Path Issues** - Apply migration scripts for base path handling
+5. **Enhance Chord Charts** - Add diagrams and Nashville number system support
+6. **Improve Lyrics Display** - Add printable view and better performance
+7. **Media Embedding Enhancements** - Add Spotify and SoundCloud support
+8. **Improve Error Handling** - Add consistent error messages for API operations
+9. **Fix Navigation UX issues** - ✅ Fixed profile redirection, image viewing, and icon alignment
+10. **Dark Mode Refinements** - ✅ Fixed sidebar styling, ensure consistent dark mode experience throughout the app
+11. **Mobile Layout Improvements** - ✅ Fixed sidebar layout issues on mobile and desktop views
+12. **Prayer Request UX Improvements** - ✅ Added more intuitive creation flow with global/church toggle and scrollable modal
 
 ## Database Migrations
-- Run database migration scripts in the supabase/migrations directory
-- Apply 20250408_add_profile_bio.sql to add bio column to profiles
-- Apply 20250408_add_profile_cover_url.sql to add missing cover_url column
-- Apply 20250408_add_image_positioning.sql to add avatar_position and cover_position columns
-- Apply auth email verification fixes
-- Run global prayer and anonymous posts fixes
+- Run database migration scripts in the supabase/migrations directory in this order:
+1. `20250409_fix_profiles_rls_final.sql` - Fixes profile permissions
+2. `20250409_add_test_notifications.sql` - Adds test notifications
+3. `20250409_add_notifications_table_fix.sql` - Fixes notifications table structure
+4. `20250409_add_post_pinning.sql` - Enables post pinning functionality
+5. `20250408_add_profile_bio.sql` - Adds bio column to profiles
+6. `20250408_add_profile_cover_url.sql` - Adds missing cover_url column
+7. `20250408_add_image_positioning.sql` - Adds avatar_position and cover_position columns
 
 ## Component Updates
+- Replace `src/components/common/UserAvatar.jsx` with the fixed version
+- Create comprehensive notifications system with real-time updates
 - Create ProfileCard, ProfileTabs, and ProfileSettings components
 - ✅ Refactor Prayer components with atomic design principles
 - Create reusable media embedding components

@@ -32,7 +32,7 @@ const Layout = ({ children }) => {
       <div className="flex flex-1 relative">
         {/* Sidebar for tablet/desktop */}
         {!isMobile && (
-          <div className="w-64 fixed top-[3.25rem] bottom-0 left-0 z-20">
+          <div className="hidden md:block w-64 fixed top-[3.8rem] bottom-0 left-0 z-20">
             <Sidebar className="h-full" />
           </div>
         )}
@@ -57,7 +57,7 @@ const Layout = ({ children }) => {
         )}
         
         {/* Main content */}
-        <main className="flex-1 px-4 md:px-6 pt-4 pb-[100px] md:ml-64">
+        <main className="flex-1 px-4 md:px-6 pt-4 pb-[100px] md:ml-64 md:pt-4">
           {children}
         </main>
       </div>

@@ -1,3 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer base {
+  .dark {
+    --color-dark-primary: #1B2431;
+    --color-dark-secondary: #1E2837;
+  }
+}
+
+@layer components {
+  .bg-gradient-dark {
+    background: linear-gradient(to bottom, var(--color-dark-primary), var(--color-dark-secondary));
+  }
+}
